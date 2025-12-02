@@ -1,21 +1,12 @@
 const express = require("express");
 const { register, login } = require("../controllers/auth.controller");
-const multer = require("multer");
+const { verifyOTP } = require("../controllers/verifyOTP.controller");
 const authRouter = express.Router();
 
-const storage = multer.diskStorage({
-  destination: function (req, file, cb) {
-    cb(null, "uploads/");
-  },
-  filename: function (req, file, cb) {
-    cb(null, Date.now() + "-" + file.originalname);
-  },
-});
-
-const upload = multer({ storage: storage });
-
-authRouter.post("/register", upload.single("profilePicture"), register);
+authRouter.post("/register", register);
 
 authRouter.post("/login", login);
+
+authRouter.post("/verify-otp", verifyOTP);
 
 module.exports = authRouter;

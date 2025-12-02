@@ -57,12 +57,6 @@ const userSchema = new mongoose.Schema(
       default: false,
     },
 
-    accountStatus: {
-      type: String,
-      enum: ["active", "inactive"],
-      default: "",
-    },
-
     otp: {
       code: String,
       expiresAt: Date,

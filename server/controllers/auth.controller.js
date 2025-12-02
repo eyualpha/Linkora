@@ -1,6 +1,7 @@
 const User = require("../models/user.model");
 const bcrypt = require("bcryptjs");
 const crypto = require("crypto");
+const jwt = require("jsonwebtoken");
 const { generateOTP } = require("../utils/generateOTP");
 const sendOTP = require("../utils/sendOTP");
 
@@ -25,7 +26,7 @@ const register = async (req, res) => {
     const hashedPassword = await bcrypt.hash(password, salt);
 
     const otpCode = generateOTP();
-    const otpExpiry = Date.now() + 1000 * 60 * 10; // 10 minutes
+    const otpExpiry = Date.now() + 1000 * 60 * 10;
 
     const newUser = await User.create({
       username,
@@ -85,6 +86,7 @@ const login = async (req, res) => {
       email: user.email,
       profilePicture: user.profilePicture,
       coverPicture: user.coverPicture,
+      bio: user.bio,
       followers: user.followers,
       following: user.following,
       isVerified: user.isVerified,
