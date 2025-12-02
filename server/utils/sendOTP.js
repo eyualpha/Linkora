@@ -1,16 +1,16 @@
 const transporter = require("../configs/nodemailer.config");
+const { EMAIL_USER } = require("../configs/env.config");
 
-const sendOTP = async (email, otp) => {
-  console.log(`OTP for ${email}: ${otp}`);
-
+const sendOTP = async (email, subject, text) => {
   const mailOptions = {
-    from: '"Linkora Support" <' + process.env.EMAIL_USER + ">",
+    from: '"Linkora Support" <' + EMAIL_USER + ">",
     to: email,
-    subject: "Your OTP Code",
-    text: `Your OTP code is: ${otp}. It is valid for 10 minutes.`,
+    subject: subject,
+    text: text,
   };
 
   await transporter.sendMail(mailOptions);
+  console.log(`OTP email sent to ${email}`);
 
   return true;
 };

@@ -7,9 +7,9 @@ const sendOTP = require("../utils/sendOTP");
 
 const register = async (req, res) => {
   try {
-    const { username, email, password } = req.body;
+    const { fullname, username, email, password } = req.body;
 
-    if (!username || !email || !password) {
+    if ((!fullname, !username || !email || !password)) {
       return res.status(400).json({ message: "All fields are required." });
     }
 
@@ -29,6 +29,7 @@ const register = async (req, res) => {
     const otpExpiry = Date.now() + 1000 * 60 * 10;
 
     const newUser = await User.create({
+      fullname,
       username,
       email,
       password: hashedPassword,
@@ -38,7 +39,11 @@ const register = async (req, res) => {
       },
     });
 
-    await sendOTP(email, otpCode);
+    await sendOTP(
+      email,
+      "Linkora - Verify Your Email",
+      `Your OTP code is: ${otpCode}. It is valid for 10 minutes.`
+    );
 
     res.status(201).json({
       message: "Registration successful! OTP sent to your email.",
@@ -82,6 +87,7 @@ const login = async (req, res) => {
 
     const safeUser = {
       _id: user._id,
+      fullname: user.fullname,
       username: user.username,
       email: user.email,
       profilePicture: user.profilePicture,
@@ -104,7 +110,77 @@ const login = async (req, res) => {
   }
 };
 
+const forgotPassword = async (req, res) => {
+  try {
+    const { email } = req.body;
+
+    if (!email) return res.status(400).json({ message: "Email is required" });
+
+    const user = await User.findOne({ email });
+    if (!user)
+      return res
+        .status(404)
+        .json({ message: "User with this email not found" });
+
+    const otp = generateOTP();
+    const otpExpiry = Date.now() + 10 * 60 * 1000;
+
+    user.resetPasswordOTP = otp;
+    user.resetPasswordOTPExpires = otpExpiry;
+
+    await user.save();
+
+    await sendOTP(
+      email,
+      "Linkora - Password Reset OTP",
+      `Your password reset OTP is: ${otp}. It is valid for 10 minutes.`
+    );
+
+    res.status(200).json({ message: "OTP sent to email" });
+  } catch (error) {
+    console.error("Forgot Password Error:", error);
+    res.status(500).json({ message: "Internal server error" });
+  }
+};
+
+const resetPassword = async (req, res) => {
+  try {
+    const { email, otp, newPassword } = req.body;
+
+    if (!email || !otp || !newPassword)
+      return res
+        .status(400)
+        .json({ message: "Email, OTP, and new password required" });
+
+    const user = await User.findOne({ email });
+    if (!user) return res.status(404).json({ message: "User not found" });
+
+    if (
+      !user.resetPasswordOTP ||
+      user.resetPasswordOTP !== otp ||
+      user.resetPasswordOTPExpires < Date.now()
+    ) {
+      return res.status(400).json({ message: "Invalid or expired OTP" });
+    }
+
+    const salt = await bcrypt.genSalt(10);
+    user.password = await bcrypt.hash(newPassword, salt);
+
+    user.resetPasswordOTP = null;
+    user.resetPasswordOTPExpires = null;
+
+    await user.save();
+
+    res.status(200).json({ message: "Password reset successfully" });
+  } catch (error) {
+    console.error("Reset Password Error:", error);
+    res.status(500).json({ message: "Internal server error" });
+  }
+};
+
 module.exports = {
   register,
   login,
+  forgotPassword,
+  resetPassword,
 };
