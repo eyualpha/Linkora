@@ -6,6 +6,7 @@ const fs = require("fs");
 
 const authRouter = require("./routes/auth.route.js");
 const userRouter = require("./routes/user.route.js");
+const postRouter = require("./routes/post.route.js");
 
 const { PORT } = require("./configs/env.config.js");
 const connectDB = require("./configs/mongodb.config.js");
@@ -22,6 +23,7 @@ app.use("/uploads", express.static("uploads"));
 
 app.use("/api/auth", authRouter);
 app.use("/api/users", userRouter);
+app.use("/api/posts", postRouter);
 
 if (!fs.existsSync("uploads")) {
   fs.mkdirSync("uploads");
