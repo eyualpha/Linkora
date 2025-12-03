@@ -5,6 +5,7 @@ const bodyParser = require("body-parser");
 const fs = require("fs");
 
 const authRouter = require("./routes/auth.route.js");
+const userRouter = require("./routes/user.route.js");
 
 const { PORT } = require("./configs/env.config.js");
 const connectDB = require("./configs/mongodb.config.js");
@@ -14,12 +15,13 @@ const app = express();
 app.use(express.json());
 app.use(cors());
 app.use(helmet());
-app.use(express.urlencoded({ extended: false }));
+app.use(express.urlencoded({ extended: true }));
 app.use(bodyParser.json());
-app.use(bodyParser.urlencoded({ extended: false }));
+app.use(bodyParser.urlencoded({ extended: true }));
 app.use("/uploads", express.static("uploads"));
 
 app.use("/api/auth", authRouter);
+app.use("/api/users", userRouter);
 
 if (!fs.existsSync("uploads")) {
   fs.mkdirSync("uploads");

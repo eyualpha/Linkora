@@ -1,21 +1,15 @@
 const express = require("express");
-const { register, login } = require("../controllers/auth.controller");
-const multer = require("multer");
+const { isAuthenticated } = require("../middlewares/auth.middleware");
+const { updateProfile } = require("../controllers/user.controller");
+const upload = require("../middlewares/upload");
+
 const userRouter = express.Router();
 
-const storage = multer.diskStorage({
-  destination: function (req, file, cb) {
-    cb(null, "uploads/");
-  },
-  filename: function (req, file, cb) {
-    cb(null, Date.now() + "-" + file.originalname);
-  },
-});
+const uploadFields = upload.fields([
+  { name: "profilePicture", maxCount: 1 },
+  { name: "coverPicture", maxCount: 1 },
+]);
 
-const upload = multer({ storage: storage });
-
-userRouter.post("/profile-picture", upload.single("profilePicture"), register);
-
-userRouter.get("/");
+userRouter.put("/update-profile", isAuthenticated, uploadFields, updateProfile);
 
 module.exports = userRouter;
