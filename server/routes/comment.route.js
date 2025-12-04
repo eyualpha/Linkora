@@ -1,21 +1,21 @@
 const express = require("express");
+const { isAuthenticated } = require("../middlewares/auth.middleware");
+const {
+  addComment,
+  deleteComment,
+  getComments,
+} = require("../controllers/comment.controller");
 
 const commentRouter = express.Router();
 
 commentRouter.get("/", (req, res) => {
   res.send("Get all comments");
 });
-commentRouter.post("/", (req, res) => {
-  res.send("Create a new comment");
-});
-commentRouter.get("/:id", (req, res) => {
-  res.send(`Get comment with ID: ${req.params.id}`);
-});
+commentRouter.post("/:postId", isAuthenticated, addComment);
+commentRouter.get("/:postId", getComments);
 commentRouter.put("/:id", (req, res) => {
   res.send(`Update comment with ID: ${req.params.id}`);
 });
-commentRouter.delete("/:id", (req, res) => {
-  res.send(`Delete comment with ID: ${req.params.id}`);
-});
+commentRouter.delete("/:id", isAuthenticated, deleteComment);
 
 module.exports = commentRouter;
