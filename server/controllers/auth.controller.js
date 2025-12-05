@@ -38,11 +38,7 @@ const register = async (req, res) => {
       },
     });
 
-    await sendOTP(
-      email,
-      "Linkora - Verify Your Email",
-      `Your OTP code is: ${otpCode}. It is valid for 10 minutes.`
-    );
+    await sendOTP(email, "Linkora - Verify Your Email", otpCode);
 
     res.status(201).json({
       message: "Registration successful! OTP sent to your email.",
@@ -129,11 +125,7 @@ const forgotPassword = async (req, res) => {
 
     await user.save();
 
-    await sendOTP(
-      email,
-      "Linkora - Password Reset OTP",
-      `Your password reset OTP is: ${otp}. It is valid for 10 minutes.`
-    );
+    await sendOTP(email, "Linkora - Password Reset OTP", otp);
 
     res.status(200).json({ message: "OTP sent to email" });
   } catch (error) {
