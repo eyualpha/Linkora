@@ -26,6 +26,12 @@ const userSchema = new mongoose.Schema(
       minlength: 6,
     },
 
+    gender: {
+      type: String,
+      enum: ["male", "female"],
+      required: true,
+    },
+
     profilePicture: {
       type: String,
       default: "",
@@ -55,6 +61,10 @@ const userSchema = new mongoose.Schema(
         ref: "User",
       },
     ],
+    isAdmin: {
+      type: Boolean,
+      default: false,
+    },
 
     isVerified: {
       type: Boolean,

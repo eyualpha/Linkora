@@ -9,6 +9,7 @@ const {
   verifyRegistrationOTP,
   verifyResetOTP,
 } = require("../controllers/verifyOTP.controller");
+const isAdmin = require("../middlewares/isAdmin");
 const authRouter = express.Router();
 
 authRouter.post("/register", register);

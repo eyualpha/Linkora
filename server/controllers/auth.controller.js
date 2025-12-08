@@ -6,9 +6,9 @@ const sendOTP = require("../utils/sendOTP");
 
 const register = async (req, res) => {
   try {
-    const { fullname, username, email, password } = req.body;
+    const { fullname, username, email, password, gender } = req.body;
 
-    if ((!fullname, !username || !email || !password)) {
+    if (!fullname || !username || !email || !password || !gender) {
       return res.status(400).json({ message: "All fields are required." });
     }
 
@@ -21,6 +21,7 @@ const register = async (req, res) => {
     if (existingUsername) {
       return res.status(400).json({ message: "Username already taken." });
     }
+
     const salt = await bcrypt.genSalt(10);
     const hashedPassword = await bcrypt.hash(password, salt);
 
@@ -31,6 +32,7 @@ const register = async (req, res) => {
       fullname,
       username,
       email,
+      gender,
       password: hashedPassword,
       otp: {
         code: otpCode,
@@ -38,15 +40,19 @@ const register = async (req, res) => {
       },
     });
 
-    await sendOTP(email, "Linkora - Verify Your Email", otpCode);
+    try {
+      await sendOTP(email, "Linkora - Verify Your Email", otpCode);
+    } catch (emailError) {
+      console.error("Email sending failed:", emailError);
+    }
 
-    res.status(201).json({
+    return res.status(201).json({
       message: "Registration successful! OTP sent to your email.",
       userId: newUser._id,
     });
   } catch (error) {
     console.error("Register Error:", error);
-    res.status(500).json({ message: "Server error." });
+    return res.status(500).json({ message: "Server error." });
   }
 };
 
