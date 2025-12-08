@@ -91,6 +91,8 @@ const login = async (req, res) => {
       fullname: user.fullname,
       username: user.username,
       email: user.email,
+      gender: user.gender,
+      isAdmin: user.isAdmin,
       profilePicture: user.profilePicture,
       coverPicture: user.coverPicture,
       bio: user.bio,
