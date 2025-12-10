@@ -35,6 +35,15 @@ app.use("/api/posts", postRouter);
 app.use("/api/comments", commentRouter);
 app.use("/api/follows", followRouter);
 
+app.get("/", (req, res) => {
+  res.send("API is running...");
+});
+
+// Catch-all 404 for undefined routes
+app.use((req, res) => {
+  res.status(404).json({ message: "Route not found" });
+});
+
 // Global error handler
 app.use((err, req, res, next) => {
   console.error("Unhandled error:", err);
@@ -46,10 +55,6 @@ app.use((err, req, res, next) => {
     return res.status(500).json({ message: err.message });
   }
   res.status(500).json({ message: "Internal server error" });
-});
-
-app.get("/", (req, res) => {
-  res.send("API is running...");
 });
 
 app.listen(PORT, () => {
