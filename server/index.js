@@ -2,7 +2,6 @@ const express = require("express");
 const cors = require("cors");
 const helmet = require("helmet");
 const bodyParser = require("body-parser");
-const fs = require("fs");
 
 const { PORT } = require("./configs/env.config.js");
 const connectDB = require("./configs/mongodb.config.js");
