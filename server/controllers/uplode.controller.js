@@ -1,4 +1,4 @@
-const uploadSingleFile = async (req, res) => {
+const uploadSinglePostFile = async (req, res) => {
   try {
     if (!req.file) return res.status(400).json({ error: "No file provided" });
 
@@ -6,7 +6,7 @@ const uploadSingleFile = async (req, res) => {
 
     return res.status(200).json({
       message: "File uploaded successfully",
-      url: path, // secure URL
+      url: path,
       public_id: filename,
     });
   } catch (error) {
@@ -16,5 +16,5 @@ const uploadSingleFile = async (req, res) => {
 };
 
 module.exports = {
-  uploadSingleFile,
+  uploadSinglePostFile,
 };

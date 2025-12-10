@@ -13,9 +13,14 @@ const postSchema = new mongoose.Schema(
       maxlength: 500,
     },
 
-    images: [
+    files: [
       {
-        type: String,
+        url: {
+          type: String,
+          required: true,
+        },
+        public_id: String,
+        resource_type: String,
       },
     ],
 

@@ -1,55 +1,47 @@
-// const multer = require("multer");
-// const path = require("path");
-
-// const storage = multer.diskStorage({
-//   destination: (req, file, cb) => cb(null, "uploads/"),
-//   filename: (req, file, cb) => {
-//     const ext = path.extname(file.originalname);
-//     cb(null, Date.now() + "-" + file.fieldname + ext);
-//   },
-// });
-
-// function fileFilter(req, file, cb) {
-//   const allowed = [
-//     "image/jpeg",
-//     "image/jpg",
-//     "image/png",
-//     "image/webp",
-//     "image/heic",
-//   ];
-//   if (allowed.includes(file.mimetype)) cb(null, true);
-//   else cb(new Error("Only image files are allowed"), false);
-// }
-
-// const upload = multer({
-//   storage,
-//   fileFilter,
-// });
-
-// module.exports = upload;
-
 const multer = require("multer");
 const { CloudinaryStorage } = require("multer-storage-cloudinary");
 const cloudinary = require("../configs/cloudinary.config");
 
+function detectFileType(mimetype) {
+  if (mimetype.startsWith("image/")) return "image";
+  if (mimetype.startsWith("video/")) return "video";
+  if (mimetype.startsWith("audio/")) return "video";
+  if (mimetype === "application/pdf") return "pdf";
+  return "raw";
+}
+
 const storage = new CloudinaryStorage({
   cloudinary,
   params: async (req, file) => {
-    let resource_type = "auto"; // auto detects (image, video, raw)
+    // Detect file type
+    const detectedType = detectFileType(file.mimetype);
+    req.fileType = detectedType; // backward compatibility for single uploads
+    file.detectedType = detectedType; // preserve on file object for controllers
+
+    let resource_type = "auto";
     let folder = "smp_uploads";
 
     return {
       folder,
-      resource_type, // handles images, videos, pdf, audio
-      public_id: Date.now() + "-" + file.originalname.split(".")[0],
-      format: undefined, // Cloudinary will detect
+      public_id: `${Date.now()}-${file.originalname.split(".")[0]}`,
+      format: undefined,
     };
   },
 });
 
 const upload = multer({
   storage,
-  limits: { fileSize: 50 * 1024 * 1024 }, // allow up to 50MB
+  fileFilter: (req, file, cb) => {
+    if (file.mimetype && file.mimetype.startsWith("image/")) {
+      cb(null, true);
+    } else {
+      cb(new Error("Only image files are allowed"));
+    }
+  },
+  limits: {
+    fileSize: 50 * 1024 * 1024,
+    files: 2, // cap total uploads per request
+  },
 });
 
 module.exports = upload;

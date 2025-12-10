@@ -4,15 +4,24 @@ const Comment = require("../models/comment.model");
 const createPost = async (req, res) => {
   try {
     const { text } = req.body;
+    const uploadedFiles = Array.isArray(req.files) ? req.files : [];
 
-    const images = req.files
-      ? req.files.map((file) => `/uploads/posts/${file.filename}`)
-      : [];
+    if (!text && uploadedFiles.length === 0) {
+      return res
+        .status(400)
+        .json({ message: "Post must include text or an image." });
+    }
+
+    const files = uploadedFiles.map((file) => ({
+      url: file.path,
+      public_id: file.filename,
+      resource_type: file.detectedType || "image",
+    }));
 
     const newPost = await Post.create({
       author: req.user.id,
-      text,
-      images,
+      ...(text ? { text } : {}),
+      ...(files.length ? { files } : {}),
     });
 
     return res.status(201).json({
@@ -21,7 +30,7 @@ const createPost = async (req, res) => {
     });
   } catch (error) {
     console.error("Create Post Error:", error);
-    res.status(500).json({ message: "Server error." });
+    return res.status(500).json({ message: "Server error." });
   }
 };
 
@@ -29,7 +38,7 @@ const updatePost = async (req, res) => {
   try {
     const postId = req.params.id;
     const userId = req.user.id;
-    const { text, removeImages } = req.body;
+    const { text, removeFiles } = req.body;
 
     const post = await Post.findById(postId);
     if (!post) return res.status(404).json({ message: "Post not found" });
@@ -44,19 +53,31 @@ const updatePost = async (req, res) => {
       post.text = text;
     }
 
-    if (removeImages) {
-      const toRemove = Array.isArray(removeImages.toString())
-        ? removeImages
-        : [removeImages];
+    if (removeFiles) {
+      const toRemove = Array.isArray(removeFiles) ? removeFiles : [removeFiles];
 
-      post.images = post.images.filter((img) => !toRemove.includes(img));
+      post.files = (post.files || []).filter(
+        (file) =>
+          !toRemove.includes(file.public_id) && !toRemove.includes(file.url)
+      );
     }
 
     if (req.files && req.files.length > 0) {
-      const newImages = req.files.map(
-        (file) => `/uploads/posts/${file.filename}`
-      );
-      post.images.push(...newImages);
+      const newFiles = req.files.map((file) => ({
+        url: file.path,
+        public_id: file.filename,
+        resource_type: file.detectedType || "image",
+      }));
+
+      const updatedFiles = [...(post.files || []), ...newFiles];
+
+      if (updatedFiles.length > 2) {
+        return res
+          .status(400)
+          .json({ message: "A post can have at most 2 images." });
+      }
+
+      post.files = updatedFiles;
     }
 
     await post.save();

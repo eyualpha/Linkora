@@ -12,7 +12,6 @@ const userRouter = require("./routes/user.route.js");
 const postRouter = require("./routes/post.route.js");
 const commentRouter = require("./routes/comment.route.js");
 const followRouter = require("./routes/follow.route.js");
-const uploadRouter = require("./routes/upload.route.js");
 
 const app = express();
 
@@ -30,7 +29,6 @@ app.use("/api/users", userRouter);
 app.use("/api/posts", postRouter);
 app.use("/api/comments", commentRouter);
 app.use("/api/follows", followRouter);
-app.use("/api/upload", uploadRouter);
 
 if (!fs.existsSync("uploads")) {
   fs.mkdirSync("uploads");
