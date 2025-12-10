@@ -13,6 +13,10 @@ const postRouter = require("./routes/post.route.js");
 const commentRouter = require("./routes/comment.route.js");
 const followRouter = require("./routes/follow.route.js");
 
+const swaggerUI = require("swagger-ui-express");
+const swaggerSpec = require("./configs/swagger.js");
+const multer = require("multer");
+
 const app = express();
 
 app.use(express.json());
@@ -22,6 +26,8 @@ app.use(express.urlencoded({ extended: true }));
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: true }));
 
+app.use("/api-docs", swaggerUI.serve, swaggerUI.setup(swaggerSpec));
+
 app.use("/uploads", express.static("uploads"));
 
 app.use("/api/auth", authRouter);
@@ -30,9 +36,18 @@ app.use("/api/posts", postRouter);
 app.use("/api/comments", commentRouter);
 app.use("/api/follows", followRouter);
 
-if (!fs.existsSync("uploads")) {
-  fs.mkdirSync("uploads");
-}
+// Global error handler
+app.use((err, req, res, next) => {
+  console.error("Unhandled error:", err);
+
+  if (err instanceof multer.MulterError) {
+    return res.status(400).json({ message: err.message });
+  }
+  if (err && err.message) {
+    return res.status(500).json({ message: err.message });
+  }
+  res.status(500).json({ message: "Internal server error" });
+});
 
 app.get("/", (req, res) => {
   res.send("API is running...");

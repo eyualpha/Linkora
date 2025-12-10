@@ -2,28 +2,22 @@ const multer = require("multer");
 const { CloudinaryStorage } = require("multer-storage-cloudinary");
 const cloudinary = require("../configs/cloudinary.config");
 
-function detectFileType(mimetype) {
-  if (mimetype.startsWith("image/")) return "image";
-  if (mimetype.startsWith("video/")) return "video";
-  if (mimetype.startsWith("audio/")) return "video";
-  if (mimetype === "application/pdf") return "pdf";
-  return "raw";
-}
-
 const storage = new CloudinaryStorage({
   cloudinary,
   params: async (req, file) => {
-    // Detect file type
-    const detectedType = detectFileType(file.mimetype);
-    req.fileType = detectedType; // backward compatibility for single uploads
-    file.detectedType = detectedType; // preserve on file object for controllers
-
-    let resource_type = "auto";
-    let folder = "smp_uploads";
+    const folder = "smp_uploads";
+    const sanitized = file.originalname
+      .split(".")[0]
+      .toString()
+      .replace(/[^a-zA-Z0-9_-]/g, "-")
+      .replace(/-+/g, "-")
+      .replace(/^-|-$/g, "");
+    const publicIdBase = sanitized || Date.now();
 
     return {
       folder,
-      public_id: `${Date.now()}-${file.originalname.split(".")[0]}`,
+      resource_type: "image",
+      public_id: `${Date.now()}-${publicIdBase}`,
       format: undefined,
     };
   },
@@ -33,14 +27,14 @@ const upload = multer({
   storage,
   fileFilter: (req, file, cb) => {
     if (file.mimetype && file.mimetype.startsWith("image/")) {
-      cb(null, true);
-    } else {
-      cb(new Error("Only image files are allowed"));
+      return cb(null, true);
     }
+
+    return cb(new Error("Only image files are allowed"));
   },
   limits: {
     fileSize: 50 * 1024 * 1024,
-    files: 2, // cap total uploads per request
+    files: 2,
   },
 });
 
