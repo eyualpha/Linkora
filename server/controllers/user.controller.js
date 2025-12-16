@@ -28,9 +28,8 @@ const updateProfile = async (req, res) => {
       req.files.profilePicture &&
       req.files.profilePicture.length > 0
     ) {
-      // If using Cloudinary, store the URL
-      user.profilePicture =
-        req.files.profilePicture[0].path || req.files.profilePicture[0].url;
+      if (user.profilePicture) deleteFileIfExists(user.profilePicture);
+      user.profilePicture = req.files.profilePicture[0].path;
     }
 
     // cover
@@ -39,8 +38,8 @@ const updateProfile = async (req, res) => {
       req.files.coverPicture &&
       req.files.coverPicture.length > 0
     ) {
-      user.coverPicture =
-        req.files.coverPicture[0].path || req.files.coverPicture[0].url;
+      if (user.coverPicture) deleteFileIfExists(user.coverPicture);
+      user.coverPicture = req.files.coverPicture[0].path;
     }
 
     if (fullname) user.fullname = fullname;
