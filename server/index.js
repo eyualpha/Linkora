@@ -15,7 +15,7 @@ const followRouter = require("./routes/follow.route.js");
 const app = express();
 
 app.use(express.json());
-app.use(cors());
+app.use(cors({ origin: "https://link-ora.vercel.app", credentials: true }));
 app.use(helmet());
 app.use(express.urlencoded({ extended: true }));
 app.use(bodyParser.json());
