@@ -5,15 +5,12 @@ const bodyParser = require("body-parser");
 
 const { PORT } = require("./configs/env.config.js");
 const connectDB = require("./configs/mongodb.config.js");
-const express = require("express");
-
 
 const authRouter = require("./routes/auth.route.js");
 const userRouter = require("./routes/user.route.js");
 const postRouter = require("./routes/post.route.js");
 const commentRouter = require("./routes/comment.route.js");
 const followRouter = require("./routes/follow.route.js");
-
 
 const app = express();
 
@@ -32,12 +29,9 @@ app.use("/api/posts", postRouter);
 app.use("/api/comments", commentRouter);
 app.use("/api/follows", followRouter);
 
-
 app.get("/", (req, res) => {
   res.send("API is running...");
 });
-
-
 
 // Global error handler
 // app.use((err, req, res, next) => {
@@ -56,3 +50,5 @@ app.listen(PORT, () => {
   console.log(`Server is running on port ${PORT}`);
   connectDB();
 });
+
+module.exports = app;
