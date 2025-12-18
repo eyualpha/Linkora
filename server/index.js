@@ -15,6 +15,16 @@ const followRouter = require("./routes/follow.route.js");
 const app = express();
 
 app.use(express.json());
+// Ensure DB is connected before handling requests; cached connectDB keeps this fast.
+app.use(async (req, res, next) => {
+  try {
+    await connectDB();
+    next();
+  } catch (err) {
+    next(err);
+  }
+});
+
 app.use(
   cors({
     origin: ["https://link-ora.vercel.app", "http://localhost:5173"],
@@ -39,21 +49,24 @@ app.get("/", (req, res) => {
 });
 
 // Global error handler
-// app.use((err, req, res, next) => {
-//   console.error("Unhandled error:", err);
+app.use((err, req, res, next) => {
+  console.error("Unhandled error:", err);
 
-//   if (err instanceof multer.MulterError) {
-//     return res.status(400).json({ message: err.message });
-//   }
-//   if (err && err.message) {
-//     return res.status(500).json({ message: err.message });
-//   }
-//   res.status(500).json({ message: "Internal server error" });
-// });
+  // Keep multer-specific handling if file uploads fail.
+  if (err && err.code === "LIMIT_UNEXPECTED_FILE") {
+    return res.status(400).json({ message: err.message });
+  }
 
-app.listen(PORT, () => {
-  console.log(`Server is running on port ${PORT}`);
-  connectDB();
+  const message = err && err.message ? err.message : "Internal server error";
+  res.status(500).json({ message });
 });
 
-module.exports = app;
+if (process.env.VERCEL) {
+  // Vercel serverless: export the app without starting a listener.
+  module.exports = app;
+} else {
+  app.listen(PORT, () => {
+    console.log(`Server is running on port ${PORT}`);
+  });
+  module.exports = app;
+}
