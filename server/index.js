@@ -12,18 +12,20 @@ const postRouter = require("./routes/post.route.js");
 const commentRouter = require("./routes/comment.route.js");
 const followRouter = require("./routes/follow.route.js");
 
+connectDB(); // Initial DB connection
+
 const app = express();
 
 app.use(express.json());
 // Ensure DB is connected before handling requests; cached connectDB keeps this fast.
-app.use(async (req, res, next) => {
-  try {
-    await connectDB();
-    next();
-  } catch (err) {
-    next(err);
-  }
-});
+// app.use(async (req, res, next) => {
+//   try {
+//     await connectDB();
+//     next();
+//   } catch (err) {
+//     next(err);
+//   }
+// });
 
 app.use(
   cors({
