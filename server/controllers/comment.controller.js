@@ -65,8 +65,38 @@ const deleteComment = async (req, res) => {
   }
 };
 
+const getCommentsByPostId = async (req, res) => {
+  try {
+    const { postId } = req.params;
+    if (!postId) {
+      return res.status(400).json({
+        success: false,
+        message: "Post ID is required",
+      });
+    }
+
+    const comments = await Comment.find({ postId })
+      .populate("author", "username profilePicture fullname")
+      .sort({ createdAt: -1 });
+
+    return res.status(200).json({
+      success: true,
+      count: comments.length,
+      data: comments,
+    });
+  } catch (error) {
+    console.error("Error fetching comments:", error);
+
+    return res.status(500).json({
+      success: false,
+      message: "Failed to fetch comments",
+    });
+  }
+};
+
 module.exports = {
   addComment,
   getComments,
   deleteComment,
+  getCommentsByPostId,
 };

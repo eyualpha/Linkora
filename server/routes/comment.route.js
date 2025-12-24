@@ -4,15 +4,14 @@ const {
   addComment,
   deleteComment,
   getComments,
+  getCommentsByPostId,
 } = require("../controllers/comment.controller");
 
 const commentRouter = express.Router();
 
-commentRouter.get("/", (req, res) => {
-  res.send("Get all comments");
-});
+commentRouter.get("/", getComments);
 commentRouter.post("/:postId", isAuthenticated, addComment);
-commentRouter.get("/:postId", getComments);
+commentRouter.get("/:postId", getCommentsByPostId);
 commentRouter.put("/:id", (req, res) => {
   res.send(`Update comment with ID: ${req.params.id}`);
 });
