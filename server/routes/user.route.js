@@ -1,6 +1,9 @@
 const express = require("express");
 const { isAuthenticated } = require("../middlewares/auth.middleware");
-const { updateProfile } = require("../controllers/user.controller");
+const {
+  updateProfile,
+  getUserById,
+} = require("../controllers/user.controller");
 const upload = require("../middlewares/upload");
 
 const userRouter = express.Router();
@@ -11,5 +14,6 @@ const uploadFields = upload.fields([
 ]);
 
 userRouter.put("/update-profile", isAuthenticated, uploadFields, updateProfile);
+userRouter.get("/:userID", isAuthenticated, getUserById);
 
 module.exports = userRouter;

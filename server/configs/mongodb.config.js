@@ -1,7 +1,9 @@
 const mongoose = require("mongoose");
 const { MONGO_URI } = require("./env.config.js");
 
-// Cache the connection promise so Vercel serverless functions reuse it.
+const dns = require("dns");
+dns.setDefaultResultOrder("ipv4first");
+
 let cachedPromise;
 
 const connectDB = async () => {
