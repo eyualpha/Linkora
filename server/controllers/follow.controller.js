@@ -79,7 +79,7 @@ const getUserFollowers = async (req, res) => {
     const userId = req.params.userId || req.user.id;
 
     const followers = await Follow.find({ following: userId })
-      .populate("follower", "fullname username profilePicture")
+      .populate("follower", "fullname username profilePicture _id")
       .select("-_id follower createdAt");
 
     res.json(followers);
@@ -94,7 +94,7 @@ const getUserFollowings = async (req, res) => {
     const userId = req.params.userId || req.user.id;
 
     const followings = await Follow.find({ follower: userId })
-      .populate("following", "fullname username profilePicture")
+      .populate("following", "fullname username profilePicture _id")
       .select("-_id following createdAt");
 
     res.json(followings);
