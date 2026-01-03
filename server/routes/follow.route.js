@@ -17,6 +17,6 @@ followRouter.post("/unfollow/:userId", isAuthenticated, unfollowUser);
 followRouter.get("/status/:userId", isAuthenticated, checkFollowStatus);
 followRouter.get("/:userId/followers", isAuthenticated, getUserFollowers);
 followRouter.get("/:userId/followings", isAuthenticated, getUserFollowings);
-followRouter.get("/suggestions", isAuthenticated, getUsersNotFollowed);
+followRouter.get("/suggestions", getUsersNotFollowed);
 
 module.exports = followRouter;
