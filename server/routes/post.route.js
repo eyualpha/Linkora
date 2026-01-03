@@ -13,7 +13,7 @@ const upload = require("../middlewares/upload");
 
 const postRouter = express.Router();
 
-postRouter.get("/", isAuthenticated, getPosts);
+postRouter.get("/", getPosts);
 postRouter.post("/", isAuthenticated, upload.array("file", 2), createPost);
 
 postRouter.get("/:id", isAuthenticated, getPostById);
