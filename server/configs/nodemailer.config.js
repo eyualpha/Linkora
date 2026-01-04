@@ -7,7 +7,7 @@ const transporter = nodemailer.createTransport({
   port: 465,
   auth: {
     user: EMAIL_USER,
-    pass: EMAIL_PASS, // MUST be a Google App Password
+    pass: EMAIL_PASS,
   },
   tls: {
     rejectUnauthorized: false, // prevents CERTIFICATE errors

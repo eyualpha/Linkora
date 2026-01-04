@@ -40,7 +40,7 @@ const upload = multer({
   },
   limits: {
     fileSize: 50 * 1024 * 1024,
-    files: 2, // cap total uploads per request
+    files: 2, 
   },
 });
 
