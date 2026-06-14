@@ -1,5 +1,6 @@
 const Follow = require("../models/follow.model");
 const User = require("../models/user.model");
+const { getPagination, paginatedResponse } = require("../utils/pagination");
 
 const followUser = async (req, res) => {
   try {
@@ -19,6 +20,15 @@ const followUser = async (req, res) => {
       follower: followerId,
       following: followingId,
     });
+
+    await Promise.all([
+      User.findByIdAndUpdate(followingId, {
+        $addToSet: { followers: followerId },
+      }),
+      User.findByIdAndUpdate(followerId, {
+        $addToSet: { following: followingId },
+      }),
+    ]);
 
     res.status(201).json({ message: "User followed successfully." });
   } catch (error) {
@@ -45,6 +55,15 @@ const unfollowUser = async (req, res) => {
         .status(400)
         .json({ message: "You are not following this user." });
     }
+
+    await Promise.all([
+      User.findByIdAndUpdate(followingId, {
+        $pull: { followers: followerId },
+      }),
+      User.findByIdAndUpdate(followerId, {
+        $pull: { following: followingId },
+      }),
+    ]);
 
     res.json({ message: "User unfollowed successfully." });
   } catch (error) {
@@ -77,12 +96,19 @@ const checkFollowStatus = async (req, res) => {
 const getUserFollowers = async (req, res) => {
   try {
     const userId = req.params.userId || req.user.id;
+    const { page, limit, skip } = getPagination(req);
 
-    const followers = await Follow.find({ following: userId })
-      .populate("follower", "fullname username profilePicture _id")
-      .select("-_id follower createdAt");
+    const [followers, total] = await Promise.all([
+      Follow.find({ following: userId })
+        .populate("follower", "fullname username profilePicture _id")
+        .select("-_id follower createdAt")
+        .skip(skip)
+        .limit(limit),
+      Follow.countDocuments({ following: userId }),
+    ]);
 
-    res.json(followers);
+    const { pagination } = paginatedResponse(followers, total, page, limit);
+    res.json({ followers, pagination });
   } catch (error) {
     console.error("Get Followers Error:", error);
     res.status(500).json({ message: "Server error" });
@@ -92,12 +118,19 @@ const getUserFollowers = async (req, res) => {
 const getUserFollowings = async (req, res) => {
   try {
     const userId = req.params.userId || req.user.id;
+    const { page, limit, skip } = getPagination(req);
 
-    const followings = await Follow.find({ follower: userId })
-      .populate("following", "fullname username profilePicture _id")
-      .select("-_id following createdAt");
+    const [followings, total] = await Promise.all([
+      Follow.find({ follower: userId })
+        .populate("following", "fullname username profilePicture _id")
+        .select("-_id following createdAt")
+        .skip(skip)
+        .limit(limit),
+      Follow.countDocuments({ follower: userId }),
+    ]);
 
-    res.json(followings);
+    const { pagination } = paginatedResponse(followings, total, page, limit);
+    res.json({ followings, pagination });
   } catch (error) {
     console.error("Get Followings Error:", error);
     res.status(500).json({ message: "Server error" });
@@ -107,20 +140,27 @@ const getUserFollowings = async (req, res) => {
 const getUsersNotFollowed = async (req, res) => {
   try {
     const currentUserId = req.user.id;
+    const { page, limit, skip } = getPagination(req);
+
     const followingDocs = await Follow.find({ follower: currentUserId }).select(
       "following -_id"
     );
-
     const followingIds = followingDocs.map((doc) => doc.following);
 
-    const users = await User.find({
-      _id: {
-        $ne: currentUserId,
-        $nin: followingIds,
-      },
-    }).select("fullname username profilePicture _id");
+    const filter = {
+      _id: { $ne: currentUserId, $nin: followingIds },
+    };
 
-    res.json(users);
+    const [users, total] = await Promise.all([
+      User.find(filter)
+        .select("fullname username profilePicture _id")
+        .skip(skip)
+        .limit(limit),
+      User.countDocuments(filter),
+    ]);
+
+    const { pagination } = paginatedResponse(users, total, page, limit);
+    res.json({ users, pagination });
   } catch (error) {
     console.error("Get Users Not Followed Error:", error);
     res.status(500).json({ message: "Server error" });

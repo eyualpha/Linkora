@@ -1,5 +1,6 @@
 const Comment = require("../models/comment.model");
 const Post = require("../models/post.model");
+const { getPagination, paginatedResponse } = require("../utils/pagination");
 
 const addComment = async (req, res) => {
   try {
@@ -20,27 +21,12 @@ const addComment = async (req, res) => {
       content,
     });
 
-    res.json({
+    res.status(201).json({
       message: "Comment added successfully",
       comment,
     });
   } catch (error) {
     console.error("Add Comment Error:", error);
-    res.status(500).json({ message: "Server error" });
-  }
-};
-
-const getComments = async (req, res) => {
-  try {
-    const { postId } = req.params;
-
-    const comments = await Comment.find({ postId })
-      .populate("author", "fullname username profilePicture")
-      .sort({ createdAt: -1 });
-
-    res.json(comments);
-  } catch (error) {
-    console.error("Get Comments Error:", error);
     res.status(500).json({ message: "Server error" });
   }
 };
@@ -75,14 +61,28 @@ const getCommentsByPostId = async (req, res) => {
       });
     }
 
-    const comments = await Comment.find({ postId })
-      .populate("author", "username profilePicture fullname")
-      .sort({ createdAt: -1 });
+    const post = await Post.findById(postId);
+    if (!post) {
+      return res.status(404).json({ message: "Post not found" });
+    }
 
+    const { page, limit, skip } = getPagination(req);
+
+    const [comments, total] = await Promise.all([
+      Comment.find({ postId })
+        .populate("author", "username profilePicture fullname")
+        .sort({ createdAt: -1 })
+        .skip(skip)
+        .limit(limit),
+      Comment.countDocuments({ postId }),
+    ]);
+
+    const { pagination } = paginatedResponse(comments, total, page, limit);
     return res.status(200).json({
       success: true,
-      count: comments.length,
+      count: total,
       data: comments,
+      pagination,
     });
   } catch (error) {
     console.error("Error fetching comments:", error);
@@ -96,7 +96,6 @@ const getCommentsByPostId = async (req, res) => {
 
 module.exports = {
   addComment,
-  getComments,
   deleteComment,
   getCommentsByPostId,
 };

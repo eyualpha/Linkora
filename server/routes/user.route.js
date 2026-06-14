@@ -2,7 +2,7 @@ const express = require("express");
 const { isAuthenticated } = require("../middlewares/auth.middleware");
 const {
   updateProfile,
-  getUserById,
+  getUserByIdHandler,
 } = require("../controllers/user.controller");
 const upload = require("../middlewares/upload");
 
@@ -14,6 +14,6 @@ const uploadFields = upload.fields([
 ]);
 
 userRouter.put("/update-profile", isAuthenticated, uploadFields, updateProfile);
-userRouter.get("/:userID", getUserById);
+userRouter.get("/:userID", getUserByIdHandler);
 
 module.exports = userRouter;

@@ -1,16 +1,18 @@
-const fs = require("fs");
-const path = require("path");
 const User = require("../models/user.model");
+const { deleteCloudinaryByUrl } = require("../utils/cloudinary.util");
 
-const deleteFileIfExists = (filePath) => {
-  try {
-    if (!filePath) return;
-    const absPath = path.join(__dirname, "..", filePath);
-    if (fs.existsSync(absPath)) fs.unlinkSync(absPath);
-  } catch (err) {
-    console.error("Failed to delete file", err);
-  }
-};
+const toSafeUser = (user) => ({
+  _id: user._id,
+  fullname: user.fullname,
+  username: user.username,
+  email: user.email,
+  bio: user.bio,
+  profilePicture: user.profilePicture,
+  coverPicture: user.coverPicture,
+  followers: user.followers,
+  following: user.following,
+  isVerified: user.isVerified,
+});
 
 const updateProfile = async (req, res) => {
   try {
@@ -22,30 +24,26 @@ const updateProfile = async (req, res) => {
     const user = await User.findById(userId);
     if (!user) return res.status(404).json({ message: "User not found" });
 
-    // profile
     if (
-      req.files &&
-      req.files.profilePicture &&
+      req.files?.profilePicture &&
       req.files.profilePicture.length > 0
     ) {
-      if (user.profilePicture) deleteFileIfExists(user.profilePicture);
+      if (user.profilePicture) {
+        await deleteCloudinaryByUrl(user.profilePicture);
+      }
       user.profilePicture = req.files.profilePicture[0].path;
     }
 
-    // cover
-    if (
-      req.files &&
-      req.files.coverPicture &&
-      req.files.coverPicture.length > 0
-    ) {
-      if (user.coverPicture) deleteFileIfExists(user.coverPicture);
+    if (req.files?.coverPicture && req.files.coverPicture.length > 0) {
+      if (user.coverPicture) {
+        await deleteCloudinaryByUrl(user.coverPicture);
+      }
       user.coverPicture = req.files.coverPicture[0].path;
     }
 
     if (fullname) user.fullname = fullname;
-    if (bio) user.bio = bio;
+    if (bio !== undefined) user.bio = bio;
 
-    // username
     if (username && username !== user.username) {
       const exists = await User.findOne({ username });
       if (exists) return res.status(400).json({ message: "Username taken" });
@@ -54,52 +52,36 @@ const updateProfile = async (req, res) => {
 
     await user.save();
 
-    const safeUser = {
-      _id: user._id,
-      fullname: user.fullname,
-      username: user.username,
-      email: user.email,
-      bio: user.bio,
-      profilePicture: user.profilePicture,
-      coverPicture: user.coverPicture,
-      followers: user.followers,
-      following: user.following,
-      isVerified: user.isVerified,
-    };
-
-    return res.status(200).json({ message: "Profile updated", user: safeUser });
+    return res
+      .status(200)
+      .json({ message: "Profile updated", user: toSafeUser(user) });
   } catch (error) {
     console.error("Update profile error:", error);
     return res.status(500).json({ message: "Server error" });
   }
 };
 
-const getUserById = (userId) => {
+const getUserByIdHandler = async (req, res) => {
   try {
-    return User.findById(userId);
+    const user = await User.findById(req.params.userID).select(
+      "-password -otp -resetPasswordOTP -resetPasswordOTPExpires"
+    );
+
+    if (!user) {
+      return res.status(404).json({ message: "User not found" });
+    }
+
+    return res.status(200).json({ user: toSafeUser(user) });
   } catch (error) {
     console.error("Get User Error:", error);
-  }
-};
-const getUSerFollowers = (userId) => {
-  try {
-    return User.findById(userId).populate("followers");
-  } catch (error) {
-    console.error("Get User Followers Error:", error);
+    return res.status(500).json({ message: "Server error" });
   }
 };
 
-const addProfilePictureToUser = (userId, profilePicturePath) => {
-  return User.findByIdAndUpdate(
-    userId,
-    { profilePicture: profilePicturePath },
-    { new: true }
-  );
-};
+const findUserById = (userId) => User.findById(userId);
 
 module.exports = {
-  addProfilePictureToUser,
-  getUserById,
-  getUSerFollowers,
+  findUserById,
+  getUserByIdHandler,
   updateProfile,
 };

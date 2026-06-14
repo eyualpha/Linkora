@@ -5,22 +5,20 @@ const toggleLike = async (req, res) => {
     const postId = req.params.id;
     const userId = req.user.id;
 
-    const post = await Post.findById(postId);
-    if (!post) return res.status(404).json({ message: "Post not found" });
+    const existing = await Post.findById(postId).select("likes");
+    if (!existing) return res.status(404).json({ message: "Post not found" });
 
-    const isLiked = post.likes.includes(userId);
+    const isLiked = existing.likes.some((id) => id.toString() === userId);
 
-    if (isLiked) {
-      post.likes.pull(userId);
-    } else {
-      post.likes.push(userId);
-    }
-
-    await post.save();
+    const updated = await Post.findByIdAndUpdate(
+      postId,
+      isLiked ? { $pull: { likes: userId } } : { $addToSet: { likes: userId } },
+      { new: true }
+    ).select("likes");
 
     return res.json({
       message: isLiked ? "Post unliked" : "Post liked",
-      likesCount: post.likes.length,
+      likesCount: updated.likes.length,
     });
   } catch (error) {
     console.error("Toggle Like Error:", error);

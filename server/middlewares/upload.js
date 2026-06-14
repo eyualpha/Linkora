@@ -5,7 +5,7 @@ const cloudinary = require("../configs/cloudinary.config");
 function detectFileType(mimetype) {
   if (mimetype.startsWith("image/")) return "image";
   if (mimetype.startsWith("video/")) return "video";
-  if (mimetype.startsWith("audio/")) return "video";
+  if (mimetype.startsWith("audio/")) return "raw";
   if (mimetype === "application/pdf") return "pdf";
   return "raw";
 }

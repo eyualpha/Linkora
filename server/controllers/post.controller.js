@@ -1,5 +1,10 @@
 const Post = require("../models/post.model");
 const Comment = require("../models/comment.model");
+const {
+  deleteCloudinaryAssets,
+  deleteCloudinaryAsset,
+} = require("../utils/cloudinary.util");
+const { getPagination, paginatedResponse } = require("../utils/pagination");
 
 const createPost = async (req, res) => {
   try {
@@ -55,6 +60,12 @@ const updatePost = async (req, res) => {
 
     if (removeFiles) {
       const toRemove = Array.isArray(removeFiles) ? removeFiles : [removeFiles];
+      const removedFiles = (post.files || []).filter(
+        (file) =>
+          toRemove.includes(file.public_id) || toRemove.includes(file.url)
+      );
+
+      await deleteCloudinaryAssets(removedFiles);
 
       post.files = (post.files || []).filter(
         (file) =>
@@ -94,10 +105,19 @@ const updatePost = async (req, res) => {
 
 const getPosts = async (req, res) => {
   try {
-    const posts = await Post.find()
-      .populate("author", "fullname username profilePicture")
-      .sort({ createdAt: -1 });
-    return res.status(200).json({ posts });
+    const { page, limit, skip } = getPagination(req);
+
+    const [posts, total] = await Promise.all([
+      Post.find()
+        .populate("author", "fullname username profilePicture")
+        .sort({ createdAt: -1 })
+        .skip(skip)
+        .limit(limit),
+      Post.countDocuments(),
+    ]);
+
+    const { pagination } = paginatedResponse(posts, total, page, limit);
+    return res.status(200).json({ posts, pagination });
   } catch (error) {
     console.error("Get Posts Error:", error);
     res.status(500).json({ message: "Server error." });
@@ -111,12 +131,15 @@ const getPostById = async (req, res) => {
       "fullname username profilePicture"
     );
 
-    const comments = await Comment.find({ post: post._id })
+    if (!post) {
+      return res.status(404).json({ message: "Post not found" });
+    }
+
+    const comments = await Comment.find({ postId: post._id })
       .populate("author", "username fullname profilePicture")
       .sort({ createdAt: -1 });
-    post.comments = comments;
 
-    return res.status(200).json({ post });
+    return res.status(200).json({ post: { ...post.toObject(), comments } });
   } catch (error) {
     console.error("Get Post Error:", error);
     return res.status(500).json({ message: "Server error." });
@@ -126,10 +149,19 @@ const getPostById = async (req, res) => {
 const getPostsByUserId = async (req, res) => {
   try {
     const userId = req.params.userId;
-    const posts = await Post.find({ author: userId })
-      .populate("author", "fullname username profilePicture")
-      .sort({ createdAt: -1 });
-    return res.json({ posts });
+    const { page, limit, skip } = getPagination(req);
+
+    const [posts, total] = await Promise.all([
+      Post.find({ author: userId })
+        .populate("author", "fullname username profilePicture")
+        .sort({ createdAt: -1 })
+        .skip(skip)
+        .limit(limit),
+      Post.countDocuments({ author: userId }),
+    ]);
+
+    const { pagination } = paginatedResponse(posts, total, page, limit);
+    return res.json({ posts, pagination });
   } catch (error) {
     console.error("Get Posts By User ID Error:", error);
     return res.status(500).json({ message: "Server error." });
@@ -145,7 +177,9 @@ const deletePost = async (req, res) => {
     if (post.author.toString() !== req.user.id) {
       return res.status(403).json({ message: "Forbidden." });
     }
-    await Comment.deleteMany({ post: post._id });
+
+    await deleteCloudinaryAssets(post.files || []);
+    await Comment.deleteMany({ postId: post._id });
     await post.deleteOne();
 
     return res.status(200).json({ message: "Post deleted successfully." });

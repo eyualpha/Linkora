@@ -11,12 +11,13 @@ const { isAuthenticated } = require("../middlewares/auth.middleware");
 
 const followRouter = express.Router();
 
+followRouter.get("/suggestions", isAuthenticated, getUsersNotFollowed);
+
 followRouter.post("/follow/:userId", isAuthenticated, followUser);
 followRouter.post("/unfollow/:userId", isAuthenticated, unfollowUser);
 
 followRouter.get("/status/:userId", isAuthenticated, checkFollowStatus);
 followRouter.get("/:userId/followers", isAuthenticated, getUserFollowers);
 followRouter.get("/:userId/followings", isAuthenticated, getUserFollowings);
-followRouter.get("/suggestions", getUsersNotFollowed);
 
 module.exports = followRouter;

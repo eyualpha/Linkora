@@ -1,5 +1,5 @@
 const User = require("../models/user.model");
-const { getUserById } = require("./user.controller");
+const { findUserById } = require("./user.controller");
 
 const verifyRegistrationOTP = async (req, res) => {
   try {
@@ -9,7 +9,7 @@ const verifyRegistrationOTP = async (req, res) => {
       return res.status(400).json({ message: "User ID and OTP are required." });
     }
 
-    const user = await getUserById(userId);
+    const user = await findUserById(userId);
     if (!user) {
       return res.status(400).json({ message: "User not found." });
     }
@@ -38,8 +38,9 @@ const verifyResetOTP = async (req, res) => {
   try {
     const { email, otp } = req.body;
 
-    if (!email || !otp)
+    if (!email || !otp) {
       return res.status(400).json({ message: "Email & OTP required" });
+    }
 
     const user = await User.findOne({ email });
     if (!user) return res.status(404).json({ message: "User not found" });

@@ -14,13 +14,12 @@ const upload = require("../middlewares/upload");
 const postRouter = express.Router();
 
 postRouter.get("/", getPosts);
-postRouter.post("/", isAuthenticated, upload.array("file", 2), createPost);
+postRouter.get("/user/:userId", getPostsByUserId);
+postRouter.put("/like/:id", isAuthenticated, toggleLike);
 
+postRouter.post("/", isAuthenticated, upload.array("file", 2), createPost);
 postRouter.get("/:id", getPostById);
 postRouter.put("/:id", isAuthenticated, upload.array("file", 2), updatePost);
 postRouter.delete("/:id", isAuthenticated, deletePost);
-
-postRouter.put("/like/:id", isAuthenticated, toggleLike);
-postRouter.get("/user/:userId", getPostsByUserId);
 
 module.exports = postRouter;

@@ -1,10 +1,10 @@
 const express = require("express");
 const cors = require("cors");
 const helmet = require("helmet");
-const bodyParser = require("body-parser");
 
-const { PORT } = require("./configs/env.config.js");
+const { PORT, validateEnv } = require("./configs/env.config.js");
 const connectDB = require("./configs/mongodb.config.js");
+const ensureDB = require("./middlewares/ensureDB.middleware.js");
 
 const authRouter = require("./routes/auth.route.js");
 const userRouter = require("./routes/user.route.js");
@@ -12,12 +12,9 @@ const postRouter = require("./routes/post.route.js");
 const commentRouter = require("./routes/comment.route.js");
 const followRouter = require("./routes/follow.route.js");
 
-connectDB(); 
+validateEnv();
 
 const app = express();
-
-app.use(express.json());
-
 
 app.use(
   cors({
@@ -26,11 +23,10 @@ app.use(
   })
 );
 app.use(helmet());
+app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
-app.use(bodyParser.json());
-app.use(bodyParser.urlencoded({ extended: true }));
 
-app.use("/uploads", express.static("uploads"));
+app.use("/api", ensureDB);
 
 app.use("/api/auth", authRouter);
 app.use("/api/users", userRouter);
@@ -42,7 +38,10 @@ app.get("/", (req, res) => {
   res.send("API is running...");
 });
 
-// Global error handler
+app.use((req, res) => {
+  res.status(404).json({ message: "Route not found" });
+});
+
 app.use((err, req, res, next) => {
   console.error("Unhandled error:", err);
 
@@ -50,15 +49,24 @@ app.use((err, req, res, next) => {
     return res.status(400).json({ message: err.message });
   }
 
-  const message = err && err.message ? err.message : "Internal server error";
-  res.status(500).json({ message });
+  res.status(500).json({ message: "Internal server error" });
 });
+
+const startServer = async () => {
+  try {
+    await connectDB();
+    app.listen(PORT, () => {
+      console.log(`Server is running on port ${PORT}`);
+    });
+  } catch (err) {
+    console.error("Failed to start server:", err);
+    process.exit(1);
+  }
+};
 
 if (process.env.VERCEL) {
   module.exports = app;
 } else {
-  app.listen(PORT, () => {
-    console.log(`Server is running on port ${PORT}`);
-  });
+  startServer();
   module.exports = app;
 }
