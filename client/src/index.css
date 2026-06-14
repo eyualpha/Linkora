@@ -1,0 +1,79 @@
+@import "tailwindcss";
+
+@theme {
+  --font-sans: "Inter", ui-sans-serif, system-ui, sans-serif;
+  --font-brand: "Pacifico", cursive;
+
+  --color-background: #f4f6f8;
+  --color-foreground: #111827;
+  --color-card: #ffffff;
+  --color-muted: #6b7280;
+  --color-border: #e5e7eb;
+  --color-primary: #e1306c;
+  --color-primary-foreground: #ffffff;
+  --color-accent: #f97316;
+  --color-ring: #e1306c;
+
+  --radius-sm: 0.5rem;
+  --radius-md: 1rem;
+  --radius-lg: 1.5rem;
+  --radius-xl: 2rem;
+}
+
+@layer base {
+  * {
+    @apply border-border;
+  }
+
+  body {
+    @apply bg-background text-foreground font-sans antialiased;
+  }
+}
+
+@layer utilities {
+  .brand-gradient {
+    background: linear-gradient(
+      45deg,
+      #f09433,
+      #e6683c,
+      #dc2743,
+      #cc2366,
+      #bc1888
+    );
+  }
+
+  .brand-gradient-text {
+    background: linear-gradient(
+      45deg,
+      #f09433,
+      #e6683c,
+      #dc2743,
+      #cc2366,
+      #bc1888
+    );
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
+  }
+
+  .story-ring {
+    background: linear-gradient(
+      45deg,
+      #f09433,
+      #e6683c,
+      #dc2743,
+      #cc2366,
+      #bc1888
+    );
+    padding: 2px;
+  }
+
+  .story-ring-viewed {
+    background: #d1d5db;
+    padding: 2px;
+  }
+
+  .glass-card {
+    @apply bg-white/90 backdrop-blur-sm shadow-[0_4px_24px_rgba(0,0,0,0.06)] border border-white/60;
+  }
+}

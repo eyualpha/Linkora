@@ -2,8 +2,9 @@ const express = require("express");
 const cors = require("cors");
 const helmet = require("helmet");
 
-const { PORT, validateEnv } = require("./configs/env.config.js");
+const { PORT, validateEnv, validateEmailConfig, RESEND_API_KEY } = require("./configs/env.config.js");
 const connectDB = require("./configs/mongodb.config.js");
+const { verifyEmailConnection } = require("./configs/nodemailer.config.js");
 const ensureDB = require("./middlewares/ensureDB.middleware.js");
 
 const authRouter = require("./routes/auth.route.js");
@@ -61,6 +62,20 @@ app.use((err, req, res, next) => {
 const startServer = async () => {
   try {
     await connectDB();
+
+    if (validateEmailConfig()) {
+      if (RESEND_API_KEY) {
+        console.log("Resend API key detected — OTP emails will use Resend.");
+      } else {
+        const emailCheck = await verifyEmailConnection();
+        if (emailCheck.ok) {
+          console.log("Email (SMTP) connection verified successfully.");
+        } else {
+          console.error("Email (SMTP) verification failed:", emailCheck.error);
+        }
+      }
+    }
+
     app.listen(PORT, () => {
       console.log(`Server is running on port ${PORT}`);
     });
