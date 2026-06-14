@@ -68,7 +68,7 @@ export function VerifyOtpPage() {
           </div>
           {error && <p className="text-sm text-red-500">{error}</p>}
           {message && <p className="text-sm text-green-600">{message}</p>}
-          <Button variant="gradient" className="w-full" disabled={loading || otp.length !== 6} onClick={handleVerify}>
+          <Button className="w-full" disabled={loading || otp.length !== 6} onClick={handleVerify}>
             {loading ? "Verifying..." : "Verify"}
           </Button>
           <Button variant="outline" className="w-full" disabled={resendLoading || !userId} onClick={handleResend}>

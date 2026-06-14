@@ -26,7 +26,7 @@ export function Sidebar() {
 
   return (
     <aside className="sticky top-6 flex h-[calc(100vh-3rem)] w-[280px] shrink-0 flex-col rounded-[2rem] glass-card p-6">
-      <Link to="/" className="mb-8 font-brand text-3xl brand-gradient-text">
+      <Link to="/" className="mb-8 font-brand text-3xl text-primary">
         Linkora
       </Link>
 
@@ -63,7 +63,7 @@ export function Sidebar() {
               to={to}
               className={cn(
                 "flex items-center gap-3 rounded-2xl px-4 py-3 text-sm font-medium transition-colors",
-                active ? "bg-gray-100 text-foreground" : "text-muted hover:bg-gray-50 hover:text-foreground"
+                active ? "bg-accent text-foreground" : "text-muted hover:bg-accent hover:text-foreground"
               )}
             >
               <Icon className="h-5 w-5" />
@@ -91,7 +91,7 @@ export function Sidebar() {
 export function MobileNav() {
   const location = useLocation();
   return (
-    <nav className="fixed bottom-0 left-0 right-0 z-40 flex items-center justify-around border-t bg-white/95 px-4 py-3 backdrop-blur lg:hidden">
+    <nav className="fixed bottom-0 left-0 right-0 z-40 flex items-center justify-around border-t border-border bg-card/95 px-4 py-3 backdrop-blur lg:hidden">
       {navItems.map(({ to, label, icon: Icon }) => {
         const active = location.pathname === to;
         return (

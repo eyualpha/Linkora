@@ -77,7 +77,7 @@ export function ProfilePage() {
 
             {!isOwnProfile && (
               <Button
-                variant={followStatus ? "outline" : "gradient"}
+                variant={followStatus ? "outline" : "default"}
                 className="mt-6"
                 onClick={() => followMutation.mutate()}
                 disabled={followMutation.isPending}

@@ -7,6 +7,7 @@ import { Button } from "@/components/ui/button";
 import { notificationsApi, usersApi } from "@/lib/api";
 import { UserAvatar } from "@/components/shared/user-avatar";
 import { CreatePostDialog } from "@/features/posts/create-post-dialog";
+import { ThemeToggle } from "@/components/theme-toggle";
 import type { User } from "@/types";
 
 export function TopBar() {
@@ -44,13 +45,13 @@ export function TopBar() {
             onBlur={() => setTimeout(() => setShowResults(false), 200)}
           />
           {showResults && query.length >= 2 && (
-            <div className="absolute left-0 right-0 top-full z-30 mt-2 overflow-hidden rounded-2xl border bg-white shadow-xl">
+            <div className="absolute left-0 right-0 top-full z-30 mt-2 overflow-hidden rounded-2xl border bg-card shadow-xl">
               {searchResults?.length ? (
                 searchResults.map((user: User) => (
                   <button
                     key={user._id}
                     type="button"
-                    className="flex w-full items-center gap-3 px-4 py-3 text-left hover:bg-gray-50"
+                    className="flex w-full items-center gap-3 px-4 py-3 text-left hover:bg-accent"
                     onMouseDown={() => navigate(`/profile/${user._id}`)}
                   >
                     <UserAvatar user={user} className="h-10 w-10" />
@@ -67,6 +68,8 @@ export function TopBar() {
           )}
         </div>
 
+        <ThemeToggle />
+
         <Button variant="ghost" size="icon" className="relative rounded-full" onClick={() => navigate("/notifications")}>
           <Bell className="h-5 w-5" />
           {unread ? (
@@ -80,11 +83,11 @@ export function TopBar() {
           <MessageCircle className="h-5 w-5" />
         </Button>
 
-        <Button variant="gradient" className="hidden gap-2 sm:flex" onClick={() => setCreateOpen(true)}>
+        <Button className="hidden gap-2 sm:flex" onClick={() => setCreateOpen(true)}>
           <Plus className="h-4 w-4" />
           Create a post
         </Button>
-        <Button variant="gradient" size="icon" className="sm:hidden" onClick={() => setCreateOpen(true)}>
+        <Button size="icon" className="sm:hidden" onClick={() => setCreateOpen(true)}>
           <Plus className="h-4 w-4" />
         </Button>
       </header>

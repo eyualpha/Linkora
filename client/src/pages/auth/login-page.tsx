@@ -43,7 +43,7 @@ export function LoginPage() {
       <Card className="w-full max-w-md p-2">
         <CardContent className="space-y-6 p-6">
           <div className="text-center">
-            <h1 className="font-brand text-4xl brand-gradient-text">Linkora</h1>
+            <h1 className="font-brand text-4xl text-primary">Linkora</h1>
             <p className="mt-2 text-muted">Welcome back</p>
           </div>
 
@@ -57,7 +57,7 @@ export function LoginPage() {
               <Input id="password" type="password" {...register("password")} className="mt-1" />
             </div>
             {error && <p className="text-sm text-red-500">{error}</p>}
-            <Button type="submit" variant="gradient" className="w-full" disabled={isSubmitting}>
+            <Button type="submit" className="w-full" disabled={isSubmitting}>
               {isSubmitting ? "Signing in..." : "Sign in"}
             </Button>
           </form>

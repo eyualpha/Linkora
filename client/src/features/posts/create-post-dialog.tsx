@@ -76,7 +76,6 @@ export function CreatePostDialog({ open, onOpenChange }: CreatePostDialogProps) 
           {error && <p className="text-sm text-red-500">{error}</p>}
 
           <Button
-            variant="gradient"
             className="w-full"
             disabled={mutation.isPending || (!text.trim() && files.length === 0)}
             onClick={() => mutation.mutate()}

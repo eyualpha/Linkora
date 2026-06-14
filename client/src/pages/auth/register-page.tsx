@@ -48,7 +48,7 @@ export function RegisterPage() {
       <Card className="w-full max-w-md p-2">
         <CardContent className="space-y-6 p-6">
           <div className="text-center">
-            <h1 className="font-brand text-4xl brand-gradient-text">Linkora</h1>
+            <h1 className="font-brand text-4xl text-primary">Linkora</h1>
             <p className="mt-2 text-muted">Create your account</p>
           </div>
 
@@ -77,7 +77,7 @@ export function RegisterPage() {
               </select>
             </div>
             {error && <p className="text-sm text-red-500">{error}</p>}
-            <Button type="submit" variant="gradient" className="w-full" disabled={isSubmitting}>
+            <Button type="submit" className="w-full" disabled={isSubmitting}>
               {isSubmitting ? "Creating..." : "Sign up"}
             </Button>
           </form>

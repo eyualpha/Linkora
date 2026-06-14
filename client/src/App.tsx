@@ -12,6 +12,7 @@ import { ProfilePage } from "@/pages/profile-page";
 import { SavedPage } from "@/pages/saved-page";
 import { NotificationsPage } from "@/pages/notifications-page";
 import { SettingsPage } from "@/pages/settings-page";
+import { PostDeepLinkHandler } from "@/components/shared/post-deep-link";
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -26,6 +27,7 @@ export default function App() {
   return (
     <QueryClientProvider client={queryClient}>
       <BrowserRouter>
+        <PostDeepLinkHandler />
         <Routes>
           <Route element={<GuestRoute />}>
             <Route path="/login" element={<LoginPage />} />

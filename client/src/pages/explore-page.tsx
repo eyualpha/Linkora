@@ -52,7 +52,7 @@ export function ExplorePage() {
                       <p className="text-sm text-muted">@{user.username}</p>
                     </div>
                   </div>
-                  <Button size="sm" variant="gradient" onClick={() => followMutation.mutate(user._id)}>
+                  <Button size="sm" onClick={() => followMutation.mutate(user._id)}>
                     <UserPlus className="mr-1 h-4 w-4" />
                     Follow
                   </Button>

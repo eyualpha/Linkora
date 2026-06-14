@@ -1,14 +1,16 @@
 import { useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { Send } from "lucide-react";
+import { Send, Share2, Check } from "lucide-react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { UserAvatar } from "@/components/shared/user-avatar";
+import { PostMediaGallery } from "@/components/shared/post-media-gallery";
 import { Skeleton } from "@/components/ui/skeleton";
 import { commentsApi, postsApi } from "@/lib/api";
 import { getErrorMessage } from "@/lib/api/client";
-import type { User } from "@/types";
+import { sharePost } from "@/lib/share";
+import type { Post, User } from "@/types";
 
 interface PostDetailDialogProps {
   postId: string;
@@ -20,6 +22,7 @@ export function PostDetailDialog({ postId, open, onOpenChange }: PostDetailDialo
   const queryClient = useQueryClient();
   const [comment, setComment] = useState("");
   const [error, setError] = useState("");
+  const [shareStatus, setShareStatus] = useState<"idle" | "shared" | "copied">("idle");
 
   const { data: post, isLoading } = useQuery({
     queryKey: ["posts", postId],
@@ -43,22 +46,38 @@ export function PostDetailDialog({ postId, open, onOpenChange }: PostDetailDialo
     onError: (err) => setError(getErrorMessage(err)),
   });
 
+  const handleShare = async () => {
+    if (!post) return;
+    try {
+      const result = await sharePost(post as Post);
+      setShareStatus(result);
+      setTimeout(() => setShareStatus("idle"), 2000);
+    } catch (err) {
+      if (err instanceof Error && err.name === "AbortError") return;
+      console.error("Share failed:", err);
+    }
+  };
+
   const author = post && typeof post.author === "object" ? post.author : null;
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="max-h-[90vh] max-w-2xl overflow-y-auto">
         <DialogHeader>
-          <DialogTitle>Post details</DialogTitle>
+          <div className="flex items-center justify-between pr-8">
+            <DialogTitle>Post details</DialogTitle>
+            <Button variant="outline" size="sm" className="gap-2" onClick={handleShare} disabled={!post}>
+              {shareStatus !== "idle" ? <Check className="h-4 w-4" /> : <Share2 className="h-4 w-4" />}
+              {shareStatus === "copied" ? "Copied" : shareStatus === "shared" ? "Shared" : "Share"}
+            </Button>
+          </div>
         </DialogHeader>
 
         {isLoading ? (
           <Skeleton className="h-64 w-full" />
         ) : post ? (
           <div className="space-y-4">
-            {post.files?.[0]?.url && (
-              <img src={post.files[0].url} alt="" className="max-h-80 w-full rounded-2xl object-cover" />
-            )}
+            <PostMediaGallery files={post.files} variant="detail" />
             {post.text && <p className="text-sm">{post.text}</p>}
 
             <div className="space-y-3">
@@ -84,7 +103,7 @@ export function PostDetailDialog({ postId, open, onOpenChange }: PostDetailDialo
                 onChange={(e) => setComment(e.target.value)}
                 onKeyDown={(e) => e.key === "Enter" && comment.trim() && commentMutation.mutate()}
               />
-              <Button size="icon" variant="gradient" onClick={() => commentMutation.mutate()} disabled={!comment.trim()}>
+              <Button size="icon" onClick={() => commentMutation.mutate()} disabled={!comment.trim()}>
                 <Send className="h-4 w-4" />
               </Button>
             </div>

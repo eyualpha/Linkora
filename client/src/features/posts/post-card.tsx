@@ -1,13 +1,15 @@
 import { useMutation, useQueryClient } from "@tanstack/react-query";
-import { Heart, MessageCircle, MoreHorizontal, Share2, Bookmark } from "lucide-react";
+import { Heart, MessageCircle, MoreHorizontal, Share2, Bookmark, Check } from "lucide-react";
 import { formatDistanceToNow } from "date-fns";
 import { useState } from "react";
 import { Link } from "react-router-dom";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { UserAvatar } from "@/components/shared/user-avatar";
+import { PostMediaGallery } from "@/components/shared/post-media-gallery";
 import { PostDetailDialog } from "./post-detail-dialog";
 import { postsApi, savesApi } from "@/lib/api";
+import { sharePost } from "@/lib/share";
 import { cn, formatCount } from "@/lib/utils";
 import type { Post, User } from "@/types";
 
@@ -18,6 +20,7 @@ interface PostCardProps {
 export function PostCard({ post }: PostCardProps) {
   const queryClient = useQueryClient();
   const [detailOpen, setDetailOpen] = useState(false);
+  const [shareStatus, setShareStatus] = useState<"idle" | "shared" | "copied">("idle");
   const author = typeof post.author === "object" ? post.author : null;
   const likesCount = post.likesCount ?? post.likes?.length ?? 0;
   const isLiked = false;
@@ -34,7 +37,16 @@ export function PostCard({ post }: PostCardProps) {
     onSuccess: () => queryClient.invalidateQueries({ queryKey: ["saves"] }),
   });
 
-  const imageUrl = post.files?.[0]?.url;
+  const handleShare = async () => {
+    try {
+      const result = await sharePost(post);
+      setShareStatus(result);
+      setTimeout(() => setShareStatus("idle"), 2000);
+    } catch (err) {
+      if (err instanceof Error && err.name === "AbortError") return;
+      console.error("Share failed:", err);
+    }
+  };
 
   return (
     <>
@@ -54,11 +66,11 @@ export function PostCard({ post }: PostCardProps) {
           </Button>
         </div>
 
-        {imageUrl ? (
-          <button type="button" className="block w-full" onClick={() => setDetailOpen(true)}>
-            <img src={imageUrl} alt="" className="aspect-square w-full object-cover" />
-          </button>
-        ) : null}
+        <PostMediaGallery
+          files={post.files}
+          variant="card"
+          onImageClick={() => setDetailOpen(true)}
+        />
 
         <div className="space-y-3 p-4">
           <div className="flex items-center justify-between">
@@ -74,14 +86,31 @@ export function PostCard({ post }: PostCardProps) {
               <Button variant="ghost" size="icon" className="rounded-full" onClick={() => setDetailOpen(true)}>
                 <MessageCircle className="h-5 w-5" />
               </Button>
-              <Button variant="ghost" size="icon" className="rounded-full">
-                <Share2 className="h-5 w-5" />
+              <Button
+                variant="ghost"
+                size="icon"
+                className="rounded-full"
+                onClick={handleShare}
+                title={shareStatus === "copied" ? "Link copied!" : "Share post"}
+              >
+                {shareStatus !== "idle" ? (
+                  <Check className="h-5 w-5 text-primary" />
+                ) : (
+                  <Share2 className="h-5 w-5" />
+                )}
               </Button>
             </div>
             <Button variant="ghost" size="icon" className="rounded-full" onClick={() => saveMutation.mutate()}>
               <Bookmark className="h-5 w-5" />
             </Button>
           </div>
+
+          {shareStatus === "copied" && (
+            <p className="text-xs text-primary">Link copied to clipboard</p>
+          )}
+          {shareStatus === "shared" && (
+            <p className="text-xs text-primary">Post shared</p>
+          )}
 
           {likesCount > 0 && (
             <p className="text-sm font-semibold">{formatCount(likesCount)} likes</p>

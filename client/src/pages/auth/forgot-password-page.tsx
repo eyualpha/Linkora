@@ -68,7 +68,7 @@ export function ForgotPasswordPage() {
                 <Label htmlFor="email">Email</Label>
                 <Input id="email" type="email" value={email} onChange={(e) => setEmail(e.target.value)} className="mt-1" />
               </div>
-              <Button variant="gradient" className="w-full" disabled={loading} onClick={handleEmail}>
+              <Button className="w-full" disabled={loading} onClick={handleEmail}>
                 Send OTP
               </Button>
             </>
@@ -81,7 +81,7 @@ export function ForgotPasswordPage() {
                 <Label htmlFor="otp">OTP</Label>
                 <Input id="otp" value={otp} onChange={(e) => setOtp(e.target.value)} className="mt-1" />
               </div>
-              <Button variant="gradient" className="w-full" disabled={loading} onClick={handleOtp}>
+              <Button className="w-full" disabled={loading} onClick={handleOtp}>
                 Verify OTP
               </Button>
             </>
@@ -93,7 +93,7 @@ export function ForgotPasswordPage() {
                 <Label htmlFor="password">New password</Label>
                 <Input id="password" type="password" value={password} onChange={(e) => setPassword(e.target.value)} className="mt-1" />
               </div>
-              <Button variant="gradient" className="w-full" disabled={loading} onClick={handleReset}>
+              <Button className="w-full" disabled={loading} onClick={handleReset}>
                 Reset password
               </Button>
             </>

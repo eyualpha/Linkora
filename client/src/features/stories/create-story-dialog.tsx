@@ -68,7 +68,7 @@ export function CreateStoryDialog({ open, onOpenChange }: CreateStoryDialogProps
 
           {error && <p className="text-sm text-red-500">{error}</p>}
 
-          <Button variant="gradient" className="w-full" disabled={!file || mutation.isPending} onClick={() => mutation.mutate()}>
+          <Button className="w-full" disabled={!file || mutation.isPending} onClick={() => mutation.mutate()}>
             {mutation.isPending ? "Uploading..." : "Share story"}
           </Button>
         </div>

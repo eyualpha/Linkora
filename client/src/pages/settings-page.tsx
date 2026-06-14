@@ -98,7 +98,7 @@ export function SettingsPage() {
             </div>
             {error && <p className="text-sm text-red-500">{error}</p>}
             {success && <p className="text-sm text-green-600">{success}</p>}
-            <Button type="submit" variant="gradient" disabled={mutation.isPending}>
+            <Button type="submit" disabled={mutation.isPending}>
               {mutation.isPending ? "Saving..." : "Save changes"}
             </Button>
           </form>
