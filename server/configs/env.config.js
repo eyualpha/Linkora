@@ -9,6 +9,8 @@ const config = {
   JWT_EXPIRES_IN: process.env.JWT_EXPIRES_IN || "7d",
   OTP_EXPIRY_MS: 10 * 60 * 1000,
   BCRYPT_SALT_ROUNDS: 10,
+  STORY_TTL_MS: 24 * 60 * 60 * 1000,
+  MAX_STORIES_PER_USER: 10,
 };
 
 const validateEnv = () => {

@@ -1,6 +1,8 @@
 const Comment = require("../models/comment.model");
 const Post = require("../models/post.model");
+const User = require("../models/user.model");
 const { getPagination, paginatedResponse } = require("../utils/pagination");
+const { createNotification } = require("../utils/notifications.util");
 
 const addComment = async (req, res) => {
   try {
@@ -20,6 +22,18 @@ const addComment = async (req, res) => {
       author: userId,
       content,
     });
+
+    if (post.author.toString() !== userId.toString()) {
+      const sender = await User.findById(userId).select("username");
+      await createNotification({
+        recipientId: post.author,
+        senderId: userId,
+        type: "comment",
+        postId,
+        commentId: comment._id,
+        message: `${sender?.username || "Someone"} commented on your post`,
+      });
+    }
 
     res.status(201).json({
       message: "Comment added successfully",

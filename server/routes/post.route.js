@@ -6,6 +6,7 @@ const {
   deletePost,
   updatePost,
   getPostsByUserId,
+  getTrendingPosts,
 } = require("../controllers/post.controller");
 const { isAuthenticated } = require("../middlewares/auth.middleware");
 const { toggleLike } = require("../controllers/like.controller");
@@ -14,6 +15,7 @@ const upload = require("../middlewares/upload");
 const postRouter = express.Router();
 
 postRouter.get("/", getPosts);
+postRouter.get("/explore/trending", getTrendingPosts);
 postRouter.get("/user/:userId", getPostsByUserId);
 postRouter.put("/like/:id", isAuthenticated, toggleLike);
 

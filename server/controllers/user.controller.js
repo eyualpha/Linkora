@@ -1,5 +1,6 @@
 const User = require("../models/user.model");
 const { deleteCloudinaryByUrl } = require("../utils/cloudinary.util");
+const { getPagination, paginatedResponse } = require("../utils/pagination");
 
 const toSafeUser = (user) => ({
   _id: user._id,
@@ -80,8 +81,42 @@ const getUserByIdHandler = async (req, res) => {
 
 const findUserById = (userId) => User.findById(userId);
 
+const searchUsers = async (req, res) => {
+  try {
+    const q = req.query.q?.trim();
+    if (!q || q.length < 2) {
+      return res
+        .status(400)
+        .json({ message: "Search query must be at least 2 characters." });
+    }
+
+    const { page, limit, skip } = getPagination(req, 20, 50);
+    const escaped = q.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+    const regex = new RegExp(escaped, "i");
+
+    const filter = {
+      $or: [{ username: regex }, { fullname: regex }],
+    };
+
+    const [users, total] = await Promise.all([
+      User.find(filter)
+        .select("fullname username profilePicture bio isVerified")
+        .skip(skip)
+        .limit(limit),
+      User.countDocuments(filter),
+    ]);
+
+    const { pagination } = paginatedResponse(users, total, page, limit);
+    return res.status(200).json({ users, pagination });
+  } catch (error) {
+    console.error("Search Users Error:", error);
+    return res.status(500).json({ message: "Server error" });
+  }
+};
+
 module.exports = {
   findUserById,
   getUserByIdHandler,
   updateProfile,
+  searchUsers,
 };

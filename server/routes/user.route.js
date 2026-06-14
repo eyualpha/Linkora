@@ -3,6 +3,7 @@ const { isAuthenticated } = require("../middlewares/auth.middleware");
 const {
   updateProfile,
   getUserByIdHandler,
+  searchUsers,
 } = require("../controllers/user.controller");
 const upload = require("../middlewares/upload");
 
@@ -14,6 +15,7 @@ const uploadFields = upload.fields([
 ]);
 
 userRouter.put("/update-profile", isAuthenticated, uploadFields, updateProfile);
+userRouter.get("/search", isAuthenticated, searchUsers);
 userRouter.get("/:userID", getUserByIdHandler);
 
 module.exports = userRouter;

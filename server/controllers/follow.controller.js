@@ -1,6 +1,7 @@
 const Follow = require("../models/follow.model");
 const User = require("../models/user.model");
 const { getPagination, paginatedResponse } = require("../utils/pagination");
+const { createNotification } = require("../utils/notifications.util");
 
 const followUser = async (req, res) => {
   try {
@@ -29,6 +30,14 @@ const followUser = async (req, res) => {
         $addToSet: { following: followingId },
       }),
     ]);
+
+    const follower = await User.findById(followerId).select("username");
+    await createNotification({
+      recipientId: followingId,
+      senderId: followerId,
+      type: "follow",
+      message: `${follower?.username || "Someone"} started following you`,
+    });
 
     res.status(201).json({ message: "User followed successfully." });
   } catch (error) {

@@ -2,7 +2,6 @@ const Post = require("../models/post.model");
 const Comment = require("../models/comment.model");
 const {
   deleteCloudinaryAssets,
-  deleteCloudinaryAsset,
 } = require("../utils/cloudinary.util");
 const { getPagination, paginatedResponse } = require("../utils/pagination");
 
@@ -168,6 +167,53 @@ const getPostsByUserId = async (req, res) => {
   }
 };
 
+const getTrendingPosts = async (req, res) => {
+  try {
+    const { page, limit, skip } = getPagination(req);
+    const sevenDaysAgo = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000);
+
+    const [posts, totalResult] = await Promise.all([
+      Post.aggregate([
+        { $match: { createdAt: { $gte: sevenDaysAgo } } },
+        { $addFields: { likesCount: { $size: "$likes" } } },
+        { $sort: { likesCount: -1, createdAt: -1 } },
+        { $skip: skip },
+        { $limit: limit },
+        {
+          $lookup: {
+            from: "users",
+            localField: "author",
+            foreignField: "_id",
+            as: "author",
+          },
+        },
+        { $unwind: "$author" },
+        {
+          $project: {
+            text: 1,
+            files: 1,
+            likes: 1,
+            likesCount: 1,
+            createdAt: 1,
+            updatedAt: 1,
+            "author._id": 1,
+            "author.fullname": 1,
+            "author.username": 1,
+            "author.profilePicture": 1,
+          },
+        },
+      ]),
+      Post.countDocuments({ createdAt: { $gte: sevenDaysAgo } }),
+    ]);
+
+    const { pagination } = paginatedResponse(posts, totalResult, page, limit);
+    return res.status(200).json({ posts, pagination });
+  } catch (error) {
+    console.error("Get Trending Posts Error:", error);
+    return res.status(500).json({ message: "Server error." });
+  }
+};
+
 const deletePost = async (req, res) => {
   try {
     const post = await Post.findById(req.params.id);
@@ -196,4 +242,5 @@ module.exports = {
   deletePost,
   updatePost,
   getPostsByUserId,
+  getTrendingPosts,
 };
