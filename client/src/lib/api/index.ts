@@ -78,6 +78,10 @@ export const storiesApi = {
       headers: { "Content-Type": "multipart/form-data" },
     }),
   view: (id: string) => apiClient.post<{ message: string; viewCount: number }>(`/stories/${id}/view`),
+  toggleLike: (id: string) =>
+    apiClient.put<{ message: string; isLiked: boolean; likesCount: number }>(
+      `/stories/like/${id}`
+    ),
   delete: (id: string) => apiClient.delete<{ message: string }>(`/stories/${id}`),
 };
 

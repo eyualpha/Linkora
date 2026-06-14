@@ -60,6 +60,8 @@ export interface StoryItem {
   createdAt: string;
   viewed: boolean;
   viewCount: number;
+  likesCount: number;
+  isLiked: boolean;
 }
 
 export interface StoryGroup {

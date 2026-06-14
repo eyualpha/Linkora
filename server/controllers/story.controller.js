@@ -8,6 +8,22 @@ const { createNotification } = require("../utils/notifications.util");
 
 const activeStoryFilter = () => ({ expiresAt: { $gt: new Date() } });
 
+const formatStoryItem = (story, viewerId) => ({
+  _id: story._id,
+  media: story.media,
+  caption: story.caption,
+  expiresAt: story.expiresAt,
+  createdAt: story.createdAt,
+  viewed: viewerId
+    ? story.viewers.some((v) => v.user.toString() === viewerId.toString())
+    : false,
+  viewCount: story.viewers.length,
+  likesCount: story.likes?.length ?? 0,
+  isLiked: viewerId
+    ? (story.likes ?? []).some((id) => id.toString() === viewerId.toString())
+    : false,
+});
+
 const createStory = async (req, res) => {
   try {
     await cleanupExpiredStories();
@@ -97,15 +113,7 @@ const getStoryFeed = async (req, res) => {
 
       if (!viewed) grouped[authorKey].hasUnviewed = true;
 
-      grouped[authorKey].stories.push({
-        _id: story._id,
-        media: story.media,
-        caption: story.caption,
-        expiresAt: story.expiresAt,
-        createdAt: story.createdAt,
-        viewed,
-        viewCount: story.viewers.length,
-      });
+      grouped[authorKey].stories.push(formatStoryItem(story, userId));
     }
 
     const feed = Object.values(grouped).sort((a, b) => {
@@ -141,17 +149,7 @@ const getUserStories = async (req, res) => {
       ...activeStoryFilter(),
     }).sort({ createdAt: 1 });
 
-    const formatted = stories.map((story) => ({
-      _id: story._id,
-      media: story.media,
-      caption: story.caption,
-      expiresAt: story.expiresAt,
-      createdAt: story.createdAt,
-      viewed: viewerId
-        ? story.viewers.some((v) => v.user.toString() === viewerId.toString())
-        : false,
-      viewCount: story.viewers.length,
-    }));
+    const formatted = stories.map((story) => formatStoryItem(story, viewerId));
 
     return res.status(200).json({ user, stories: formatted });
   } catch (error) {
@@ -172,20 +170,11 @@ const getStoryById = async (req, res) => {
     }
 
     const viewerId = req.user?.id;
-    const viewed = viewerId
-      ? story.viewers.some((v) => v.user.toString() === viewerId.toString())
-      : false;
 
     return res.status(200).json({
       story: {
-        _id: story._id,
+        ...formatStoryItem(story, viewerId),
         author: story.author,
-        media: story.media,
-        caption: story.caption,
-        expiresAt: story.expiresAt,
-        createdAt: story.createdAt,
-        viewed,
-        viewCount: story.viewers.length,
       },
     });
   } catch (error) {
@@ -267,6 +256,50 @@ const getStoryViewers = async (req, res) => {
   }
 };
 
+const toggleStoryLike = async (req, res) => {
+  try {
+    const storyId = req.params.id;
+    const userId = req.user.id;
+
+    const existing = await Story.findOne({
+      _id: storyId,
+      ...activeStoryFilter(),
+    }).select("likes author");
+
+    if (!existing) {
+      return res.status(404).json({ message: "Story not found or expired." });
+    }
+
+    const isLiked = existing.likes.some((id) => id.toString() === userId);
+
+    const updated = await Story.findByIdAndUpdate(
+      storyId,
+      isLiked ? { $pull: { likes: userId } } : { $addToSet: { likes: userId } },
+      { new: true }
+    ).select("likes");
+
+    if (!isLiked && existing.author.toString() !== userId.toString()) {
+      const sender = await User.findById(userId).select("username");
+      await createNotification({
+        recipientId: existing.author,
+        senderId: userId,
+        type: "like",
+        storyId,
+        message: `${sender?.username || "Someone"} liked your story`,
+      });
+    }
+
+    return res.json({
+      message: isLiked ? "Story unliked" : "Story liked",
+      isLiked: !isLiked,
+      likesCount: updated.likes.length,
+    });
+  } catch (error) {
+    console.error("Toggle Story Like Error:", error);
+    return res.status(500).json({ message: "Server error." });
+  }
+};
+
 const deleteStory = async (req, res) => {
   try {
     const story = await Story.findById(req.params.id);
@@ -299,5 +332,6 @@ module.exports = {
   getStoryById,
   viewStory,
   getStoryViewers,
+  toggleStoryLike,
   deleteStory,
 };

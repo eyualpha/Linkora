@@ -6,6 +6,7 @@ const {
   getStoryById,
   viewStory,
   getStoryViewers,
+  toggleStoryLike,
   deleteStory,
 } = require("../controllers/story.controller");
 const { isAuthenticated } = require("../middlewares/auth.middleware");
@@ -17,6 +18,7 @@ storyRouter.post("/", isAuthenticated, uploadStory.single("media"), createStory)
 storyRouter.get("/feed", isAuthenticated, getStoryFeed);
 storyRouter.get("/user/:userId", isAuthenticated, getUserStories);
 
+storyRouter.put("/like/:id", isAuthenticated, toggleStoryLike);
 storyRouter.get("/:id/viewers", isAuthenticated, getStoryViewers);
 storyRouter.post("/:id/view", isAuthenticated, viewStory);
 storyRouter.get("/:id", isAuthenticated, getStoryById);
