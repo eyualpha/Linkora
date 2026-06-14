@@ -1,5 +1,5 @@
-import { useMutation, useQueryClient } from "@tanstack/react-query";
-import { Heart, MessageCircle, MoreHorizontal, Share2, Bookmark, Check } from "lucide-react";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { Heart, MessageCircle, Share2, Bookmark, Check, UserPlus } from "lucide-react";
 import { formatDistanceToNow } from "date-fns";
 import { useState } from "react";
 import { Link } from "react-router-dom";
@@ -8,8 +8,9 @@ import { Button } from "@/components/ui/button";
 import { UserAvatar } from "@/components/shared/user-avatar";
 import { PostMediaGallery } from "@/components/shared/post-media-gallery";
 import { PostDetailDialog } from "./post-detail-dialog";
-import { postsApi, savesApi } from "@/lib/api";
+import { followsApi, postsApi, savesApi } from "@/lib/api";
 import { sharePost } from "@/lib/share";
+import { useAuthStore } from "@/stores/auth-store";
 import { cn, formatCount } from "@/lib/utils";
 import type { Post, User } from "@/types";
 
@@ -19,11 +20,20 @@ interface PostCardProps {
 
 export function PostCard({ post }: PostCardProps) {
   const queryClient = useQueryClient();
+  const currentUser = useAuthStore((s) => s.user);
   const [detailOpen, setDetailOpen] = useState(false);
   const [shareStatus, setShareStatus] = useState<"idle" | "shared" | "copied">("idle");
   const author = typeof post.author === "object" ? post.author : null;
+  const authorId = author?._id;
+  const isOwnPost = Boolean(currentUser?._id && authorId && currentUser._id === authorId);
   const likesCount = post.likesCount ?? post.likes?.length ?? 0;
   const isLiked = false;
+
+  const { data: isFollowing } = useQuery({
+    queryKey: ["follows", "status", authorId],
+    queryFn: async () => (await followsApi.status(authorId!)).data.isFollowing,
+    enabled: Boolean(authorId && !isOwnPost),
+  });
 
   const likeMutation = useMutation({
     mutationFn: () => postsApi.toggleLike(post._id),
@@ -37,6 +47,14 @@ export function PostCard({ post }: PostCardProps) {
     onSuccess: () => queryClient.invalidateQueries({ queryKey: ["saves"] }),
   });
 
+  const followMutation = useMutation({
+    mutationFn: () => followsApi.follow(authorId!),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["follows", "status", authorId] });
+      queryClient.invalidateQueries({ queryKey: ["follows"] });
+    },
+  });
+
   const handleShare = async () => {
     try {
       const result = await sharePost(post);
@@ -48,22 +66,36 @@ export function PostCard({ post }: PostCardProps) {
     }
   };
 
+  const showFollowButton = !isOwnPost && authorId && !isFollowing;
+
   return (
     <>
       <Card className="overflow-hidden transition-transform hover:-translate-y-0.5">
-        <div className="flex items-center justify-between p-4">
-          <Link to={author ? `/profile/${author._id}` : "#"} className="flex items-center gap-3">
-            <UserAvatar user={author as User} className="h-10 w-10" />
-            <div>
-              <p className="text-sm font-semibold">{author?.username}</p>
+        <div className="flex items-center justify-between gap-2 p-4">
+          <div className="flex min-w-0 flex-1 items-center gap-3">
+            <UserAvatar user={author as User} className="h-10 w-10 shrink-0" />
+            <Link
+              to={authorId ? `/profile/${authorId}` : "#"}
+              className="min-w-0 hover:opacity-80"
+            >
+              <p className="truncate text-sm font-semibold">{author?.username}</p>
               <p className="text-xs text-muted">
                 {formatDistanceToNow(new Date(post.createdAt), { addSuffix: true })}
               </p>
-            </div>
-          </Link>
-          <Button variant="ghost" size="icon" className="rounded-full">
-            <MoreHorizontal className="h-4 w-4" />
-          </Button>
+            </Link>
+          </div>
+
+          {showFollowButton && (
+            <Button
+              size="sm"
+              className="shrink-0 gap-1.5 px-3"
+              onClick={() => followMutation.mutate()}
+              disabled={followMutation.isPending}
+            >
+              <UserPlus className="h-4 w-4" />
+              Follow
+            </Button>
+          )}
         </div>
 
         <PostMediaGallery

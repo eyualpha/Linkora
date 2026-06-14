@@ -84,7 +84,7 @@ export function PostDetailDialog({ postId, open, onOpenChange }: PostDetailDialo
               <h4 className="font-semibold">Comments</h4>
               {comments?.map((c) => (
                 <div key={c._id} className="flex gap-3">
-                  <UserAvatar user={c.author} className="h-8 w-8" />
+                  <UserAvatar user={c.author} linkToProfile={false} className="h-8 w-8" />
                   <div>
                     <p className="text-sm">
                       <span className="font-semibold">{c.author.username}</span> {c.content}
@@ -96,7 +96,7 @@ export function PostDetailDialog({ postId, open, onOpenChange }: PostDetailDialo
             </div>
 
             <div className="flex gap-2">
-              <UserAvatar user={author as User} className="h-8 w-8" />
+              <UserAvatar user={author as User} linkToProfile={false} className="h-8 w-8" />
               <Input
                 placeholder="Add a comment..."
                 value={comment}

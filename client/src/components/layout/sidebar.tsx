@@ -1,11 +1,5 @@
 import { Link, useLocation, useNavigate } from "react-router-dom";
-import {
-  Bookmark,
-  Compass,
-  Home,
-  LogOut,
-  Settings,
-} from "lucide-react";
+import { Bookmark, Compass, Home, LogOut, Settings } from "lucide-react";
 import { UserAvatar } from "@/components/shared/user-avatar";
 import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
@@ -30,10 +24,12 @@ export function Sidebar() {
         Linkora
       </Link>
 
-      <Link to={user ? `/profile/${user._id}` : "/"} className="mb-6 flex flex-col items-center text-center">
-        <UserAvatar user={user} className="h-24 w-24 border-4 border-white shadow-md" />
-        <h2 className="mt-4 text-lg font-bold">{user?.fullname}</h2>
-        <p className="text-sm text-muted">@{user?.username}</p>
+      <div className="mb-6 flex flex-col items-center text-center">
+        <UserAvatar user={user} className="h-24 w-24 border-4 border-card shadow-md" />
+        <Link to={user ? `/profile/${user._id}` : "/"} className="mt-4 hover:opacity-80">
+          <h2 className="text-lg font-bold">{user?.fullname}</h2>
+          <p className="text-sm text-muted">@{user?.username}</p>
+        </Link>
 
         <div className="mt-4 grid w-full grid-cols-2 gap-2 text-center">
           {[
@@ -48,9 +44,9 @@ export function Sidebar() {
         </div>
 
         {user?.bio && (
-          <p className="mt-4 line-clamp-3 text-sm text-gray-600">{user.bio}</p>
+          <p className="mt-4 line-clamp-3 text-sm text-muted">{user.bio}</p>
         )}
-      </Link>
+      </div>
 
       <Separator className="mb-4" />
 

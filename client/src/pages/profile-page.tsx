@@ -54,7 +54,7 @@ export function ProfilePage() {
     <div className="space-y-8">
       <div className="glass-card rounded-3xl p-8">
         <div className="flex flex-col items-center gap-6 sm:flex-row sm:items-start">
-          <UserAvatar user={profile} className="h-28 w-28 border-4 border-white shadow-lg" />
+          <UserAvatar user={profile} linkToProfile={false} className="h-28 w-28 border-4 border-card shadow-lg" />
           <div className="flex-1 text-center sm:text-left">
             <h1 className="text-2xl font-bold">{profile.fullname}</h1>
             <p className="text-muted">@{profile.username}</p>

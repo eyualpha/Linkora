@@ -1,3 +1,4 @@
+import { useEffect } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { formatDistanceToNow } from "date-fns";
 import { Bell, CheckCheck, Trash2 } from "lucide-react";
@@ -6,29 +7,43 @@ import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
 import { notificationsApi } from "@/lib/api";
+import {
+  UNREAD_NOTIFICATIONS_QUERY_KEY,
+  useUnreadNotificationCount,
+} from "@/hooks/use-unread-notifications";
 import { cn } from "@/lib/utils";
 
 export function NotificationsPage() {
   const queryClient = useQueryClient();
+  const { refetch: refetchUnread } = useUnreadNotificationCount();
 
   const { data, isLoading } = useQuery({
     queryKey: ["notifications"],
     queryFn: async () => (await notificationsApi.getAll()).data.notifications,
   });
 
+  useEffect(() => {
+    refetchUnread();
+  }, [refetchUnread]);
+
+  const invalidateAll = () => {
+    queryClient.invalidateQueries({ queryKey: ["notifications"] });
+    queryClient.invalidateQueries({ queryKey: UNREAD_NOTIFICATIONS_QUERY_KEY });
+  };
+
   const markAllMutation = useMutation({
     mutationFn: () => notificationsApi.markAllRead(),
-    onSuccess: () => queryClient.invalidateQueries({ queryKey: ["notifications"] }),
+    onSuccess: invalidateAll,
   });
 
   const markReadMutation = useMutation({
     mutationFn: (id: string) => notificationsApi.markRead(id),
-    onSuccess: () => queryClient.invalidateQueries({ queryKey: ["notifications"] }),
+    onSuccess: invalidateAll,
   });
 
   const deleteMutation = useMutation({
     mutationFn: (id: string) => notificationsApi.delete(id),
-    onSuccess: () => queryClient.invalidateQueries({ queryKey: ["notifications"] }),
+    onSuccess: invalidateAll,
   });
 
   return (
@@ -47,7 +62,7 @@ export function NotificationsPage() {
       {isLoading ? (
         <div className="space-y-3">
           {Array.from({ length: 5 }).map((_, i) => (
-            <Skeleton key={i} className="h-20 rounded-2xl" />
+            <Skeleton key={i} className="h-20 rounded-xl" />
           ))}
         </div>
       ) : data?.length ? (

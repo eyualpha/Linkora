@@ -73,7 +73,7 @@ export function SettingsPage() {
             </label>
             <div className="absolute -bottom-8 left-6">
               <div className="relative">
-                <UserAvatar user={user} className="h-20 w-20 border-4 border-white" />
+                <UserAvatar user={user} linkToProfile={false} className="h-20 w-20 border-4 border-card" />
                 <label className="absolute bottom-0 right-0 cursor-pointer rounded-full bg-primary p-1.5 text-white">
                   <Camera className="h-3 w-3" />
                   <input type="file" accept="image/*" className="hidden" onChange={(e) => setProfileFile(e.target.files?.[0] || null)} />

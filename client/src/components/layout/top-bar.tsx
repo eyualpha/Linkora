@@ -4,23 +4,23 @@ import { Bell, MessageCircle, Plus, Search } from "lucide-react";
 import { useQuery } from "@tanstack/react-query";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
-import { notificationsApi, usersApi } from "@/lib/api";
+import { usersApi } from "@/lib/api";
 import { UserAvatar } from "@/components/shared/user-avatar";
+import { NotificationDot } from "@/components/shared/notification-dot";
 import { CreatePostDialog } from "@/features/posts/create-post-dialog";
 import { ThemeToggle } from "@/components/theme-toggle";
+import { useUnreadNotificationCount } from "@/hooks/use-unread-notifications";
+import { useAuthStore } from "@/stores/auth-store";
 import type { User } from "@/types";
 
 export function TopBar() {
   const navigate = useNavigate();
+  const currentUser = useAuthStore((s) => s.user);
   const [query, setQuery] = useState("");
   const [showResults, setShowResults] = useState(false);
   const [createOpen, setCreateOpen] = useState(false);
 
-  const { data: unread } = useQuery({
-    queryKey: ["notifications", "unread"],
-    queryFn: async () => (await notificationsApi.unreadCount()).data.unreadCount,
-    refetchInterval: 30000,
-  });
+  const { data: unreadCount = 0 } = useUnreadNotificationCount();
 
   const { data: searchResults } = useQuery({
     queryKey: ["users", "search", query],
@@ -30,8 +30,8 @@ export function TopBar() {
 
   return (
     <>
-      <header className="mb-6 flex items-center gap-4">
-        <div className="relative flex-1">
+      <header className="mb-6 flex items-center gap-3 sm:gap-4">
+        <div className="relative min-w-0 flex-1">
           <Search className="absolute left-4 top-1/2 h-4 w-4 -translate-y-1/2 text-muted" />
           <Input
             placeholder="Search users..."
@@ -45,7 +45,7 @@ export function TopBar() {
             onBlur={() => setTimeout(() => setShowResults(false), 200)}
           />
           {showResults && query.length >= 2 && (
-            <div className="absolute left-0 right-0 top-full z-30 mt-2 overflow-hidden rounded-2xl border bg-card shadow-xl">
+            <div className="absolute left-0 right-0 top-full z-30 mt-2 overflow-hidden rounded-xl border bg-card shadow-xl">
               {searchResults?.length ? (
                 searchResults.map((user: User) => (
                   <button
@@ -54,7 +54,7 @@ export function TopBar() {
                     className="flex w-full items-center gap-3 px-4 py-3 text-left hover:bg-accent"
                     onMouseDown={() => navigate(`/profile/${user._id}`)}
                   >
-                    <UserAvatar user={user} className="h-10 w-10" />
+                    <UserAvatar user={user} className="h-10 w-10" linkToProfile={false} />
                     <div>
                       <p className="text-sm font-semibold">{user.fullname}</p>
                       <p className="text-xs text-muted">@{user.username}</p>
@@ -70,24 +70,34 @@ export function TopBar() {
 
         <ThemeToggle />
 
-        <Button variant="ghost" size="icon" className="relative rounded-full" onClick={() => navigate("/notifications")}>
+        {currentUser && (
+          <UserAvatar user={currentUser} className="hidden h-9 w-9 sm:block" />
+        )}
+
+        <Button
+          variant="ghost"
+          size="icon"
+          className="relative shrink-0 rounded-full"
+          onClick={() => navigate("/notifications")}
+          aria-label={
+            unreadCount > 0
+              ? `Notifications, ${unreadCount} unread`
+              : "Notifications"
+          }
+        >
           <Bell className="h-5 w-5" />
-          {unread ? (
-            <span className="absolute -right-0.5 -top-0.5 flex h-5 min-w-5 items-center justify-center rounded-full bg-primary px-1 text-[10px] font-bold text-white">
-              {unread > 9 ? "9+" : unread}
-            </span>
-          ) : null}
+          <NotificationDot count={unreadCount} />
         </Button>
 
-        <Button variant="ghost" size="icon" className="rounded-full">
+        <Button variant="ghost" size="icon" className="hidden shrink-0 rounded-full sm:inline-flex">
           <MessageCircle className="h-5 w-5" />
         </Button>
 
-        <Button className="hidden gap-2 sm:flex" onClick={() => setCreateOpen(true)}>
+        <Button className="hidden shrink-0 gap-2 sm:flex" onClick={() => setCreateOpen(true)}>
           <Plus className="h-4 w-4" />
           Create a post
         </Button>
-        <Button size="icon" className="sm:hidden" onClick={() => setCreateOpen(true)}>
+        <Button size="icon" className="shrink-0 sm:hidden" onClick={() => setCreateOpen(true)}>
           <Plus className="h-4 w-4" />
         </Button>
       </header>
