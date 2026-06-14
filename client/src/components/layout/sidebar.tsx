@@ -25,7 +25,7 @@ export function Sidebar() {
   const { user, logout } = useAuthStore();
 
   return (
-    <aside className="sticky top-6 flex h-[calc(100vh-3rem)] w-[280px] shrink-0 flex-col rounded-[2rem] glass-card p-6">
+    <aside className="sticky top-6 flex h-[calc(100vh-3rem)] w-[280px] shrink-0 flex-col rounded-xl glass-card p-6">
       <Link to="/" className="mb-8 font-brand text-3xl text-primary">
         Linkora
       </Link>
@@ -62,7 +62,7 @@ export function Sidebar() {
               key={to}
               to={to}
               className={cn(
-                "flex items-center gap-3 rounded-2xl px-4 py-3 text-sm font-medium transition-colors",
+                "flex items-center gap-3 rounded-lg px-4 py-3 text-sm font-medium transition-colors",
                 active ? "bg-accent text-foreground" : "text-muted hover:bg-accent hover:text-foreground"
               )}
             >
@@ -75,7 +75,7 @@ export function Sidebar() {
 
       <Button
         variant="ghost"
-        className="mt-auto justify-start gap-3 rounded-2xl px-4 text-muted hover:text-red-500"
+        className="mt-auto justify-start gap-3 rounded-lg px-4 text-muted hover:text-red-500"
         onClick={() => {
           logout();
           navigate("/login");

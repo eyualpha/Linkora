@@ -77,7 +77,7 @@ export function PostDetailDialog({ postId, open, onOpenChange }: PostDetailDialo
           <Skeleton className="h-64 w-full" />
         ) : post ? (
           <div className="space-y-4">
-            <PostMediaGallery files={post.files} variant="detail" />
+            <PostMediaGallery files={post.files} variant="detail" className="mx-auto max-w-full" />
             {post.text && <p className="text-sm">{post.text}</p>}
 
             <div className="space-y-3">

@@ -1,6 +1,7 @@
 import { Outlet } from "react-router-dom";
 import { Sidebar, MobileNav } from "./sidebar";
 import { TopBar } from "./top-bar";
+import { PageBackButton } from "./page-back-button";
 
 export function AppLayout() {
   return (
@@ -11,6 +12,7 @@ export function AppLayout() {
         </div>
         <main className="min-w-0 flex-1">
           <TopBar />
+          <PageBackButton />
           <Outlet />
         </main>
       </div>
