@@ -66,7 +66,7 @@ export function PostCard({ post }: PostCardProps) {
     }
   };
 
-  const showFollowButton = !isOwnPost && authorId && !isFollowing;
+  const showFollowAction = !isOwnPost && authorId && isFollowing !== undefined;
 
   return (
     <>
@@ -85,17 +85,27 @@ export function PostCard({ post }: PostCardProps) {
             </Link>
           </div>
 
-          {showFollowButton && (
-            <Button
-              size="sm"
-              className="shrink-0 gap-1.5 px-3"
-              onClick={() => followMutation.mutate()}
-              disabled={followMutation.isPending}
-            >
-              <UserPlus className="h-4 w-4" />
-              Follow
-            </Button>
-          )}
+          {showFollowAction &&
+            (isFollowing ? (
+              <Button
+                size="sm"
+                variant="outline"
+                className="shrink-0 border-border bg-transparent px-3 text-muted hover:bg-transparent"
+                disabled
+              >
+                Following
+              </Button>
+            ) : (
+              <Button
+                size="sm"
+                className="shrink-0 gap-1.5 px-3"
+                onClick={() => followMutation.mutate()}
+                disabled={followMutation.isPending}
+              >
+                <UserPlus className="h-4 w-4" />
+                Follow
+              </Button>
+            ))}
         </div>
 
         <PostMediaGallery
