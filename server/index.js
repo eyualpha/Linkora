@@ -88,9 +88,8 @@ const startServer = async () => {
   }
 };
 
-if (process.env.VERCEL) {
-  module.exports = app;
-} else {
+module.exports = app;
+
+if (!process.env.VERCEL) {
   startServer();
-  module.exports = app;
 }

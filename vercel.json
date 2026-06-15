@@ -1,15 +1,16 @@
 {
   "version": 2,
-  "builds": [
-    {
-      "src": "server/index.js",
-      "use": "@vercel/node"
+  "installCommand": "npm install --prefix server",
+  "buildCommand": "",
+  "functions": {
+    "api/index.js": {
+      "includeFiles": "server/**"
     }
-  ],
-  "routes": [
+  },
+  "rewrites": [
     {
-      "src": "/(.*)",
-      "dest": "server/index.js"
+      "source": "/(.*)",
+      "destination": "/api"
     }
   ]
 }

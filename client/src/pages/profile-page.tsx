@@ -2,7 +2,7 @@ import { useParams } from "react-router-dom";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { useInfiniteQuery } from "@tanstack/react-query";
 import { UserAvatar } from "@/components/shared/user-avatar";
-import { PostMasonryGrid } from "@/components/shared/post-masonry-grid";
+import { PostGrid } from "@/components/shared/post-grid";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
 import { followsApi, postsApi, usersApi } from "@/lib/api";
@@ -91,7 +91,7 @@ export function ProfilePage() {
 
       <section>
         <h2 className="mb-4 text-xl font-bold">Posts</h2>
-        <PostMasonryGrid posts={userPosts} />
+        <PostGrid posts={userPosts} />
       </section>
     </div>
   );
