@@ -32,6 +32,7 @@ const toggleLike = async (req, res) => {
     return res.json({
       message: isLiked ? "Post unliked" : "Post liked",
       likesCount: updated.likes.length,
+      isLiked: !isLiked,
     });
   } catch (error) {
     console.error("Toggle Like Error:", error);

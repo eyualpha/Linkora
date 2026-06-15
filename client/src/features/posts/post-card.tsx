@@ -1,7 +1,7 @@
+import { useEffect, useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { Heart, MessageCircle, Share2, Bookmark, Check, UserPlus } from "lucide-react";
 import { formatDistanceToNow } from "date-fns";
-import { useState } from "react";
 import { Link } from "react-router-dom";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -18,6 +18,11 @@ interface PostCardProps {
   post: Post;
 }
 
+function isPostLikedByUser(post: Post, userId?: string) {
+  if (!userId || !post.likes?.length) return false;
+  return post.likes.some((id) => String(id) === userId);
+}
+
 export function PostCard({ post }: PostCardProps) {
   const queryClient = useQueryClient();
   const currentUser = useAuthStore((s) => s.user);
@@ -26,8 +31,14 @@ export function PostCard({ post }: PostCardProps) {
   const author = typeof post.author === "object" ? post.author : null;
   const authorId = author?._id;
   const isOwnPost = Boolean(currentUser?._id && authorId && currentUser._id === authorId);
-  const likesCount = post.likesCount ?? post.likes?.length ?? 0;
-  const isLiked = false;
+
+  const [isLiked, setIsLiked] = useState(() => isPostLikedByUser(post, currentUser?._id));
+  const [likesCount, setLikesCount] = useState(post.likesCount ?? post.likes?.length ?? 0);
+
+  useEffect(() => {
+    setIsLiked(isPostLikedByUser(post, currentUser?._id));
+    setLikesCount(post.likesCount ?? post.likes?.length ?? 0);
+  }, [post._id, post.likes, post.likesCount, currentUser?._id]);
 
   const { data: isFollowing } = useQuery({
     queryKey: ["follows", "status", authorId],
@@ -35,16 +46,51 @@ export function PostCard({ post }: PostCardProps) {
     enabled: Boolean(authorId && !isOwnPost),
   });
 
+  const { data: isSaved = false } = useQuery({
+    queryKey: ["saves", "status", post._id],
+    queryFn: async () => (await savesApi.status(post._id)).data.isSaved,
+    enabled: Boolean(currentUser),
+    staleTime: 30_000,
+  });
+
   const likeMutation = useMutation({
     mutationFn: () => postsApi.toggleLike(post._id),
-    onSuccess: () => {
+    onMutate: () => {
+      const wasLiked = isLiked;
+      setIsLiked(!wasLiked);
+      setLikesCount((count) => Math.max(0, count + (wasLiked ? -1 : 1)));
+      return { wasLiked };
+    },
+    onSuccess: (response) => {
+      setIsLiked(response.data.isLiked);
+      setLikesCount(response.data.likesCount);
       queryClient.invalidateQueries({ queryKey: ["posts"] });
+    },
+    onError: (_error, _variables, context) => {
+      if (context) {
+        setIsLiked(context.wasLiked);
+        setLikesCount(post.likesCount ?? post.likes?.length ?? 0);
+      }
     },
   });
 
   const saveMutation = useMutation({
-    mutationFn: () => savesApi.save(post._id),
-    onSuccess: () => queryClient.invalidateQueries({ queryKey: ["saves"] }),
+    mutationFn: () => (isSaved ? savesApi.unsave(post._id) : savesApi.save(post._id)),
+    onMutate: async () => {
+      await queryClient.cancelQueries({ queryKey: ["saves", "status", post._id] });
+      const previous = queryClient.getQueryData<boolean>(["saves", "status", post._id]);
+      queryClient.setQueryData(["saves", "status", post._id], !isSaved);
+      return { previous };
+    },
+    onError: (_error, _variables, context) => {
+      if (context?.previous !== undefined) {
+        queryClient.setQueryData(["saves", "status", post._id], context.previous);
+      }
+    },
+    onSettled: () => {
+      queryClient.invalidateQueries({ queryKey: ["saves"] });
+      queryClient.invalidateQueries({ queryKey: ["saves", "status", post._id] });
+    },
   });
 
   const followMutation = useMutation({
@@ -130,8 +176,16 @@ export function PostCard({ post }: PostCardProps) {
                 size="icon"
                 className="rounded-full"
                 onClick={() => likeMutation.mutate()}
+                disabled={!currentUser || likeMutation.isPending}
+                aria-label={isLiked ? "Unlike post" : "Like post"}
+                aria-pressed={isLiked}
               >
-                <Heart className={cn("h-5 w-5", isLiked && "fill-primary text-primary")} />
+                <Heart
+                  className={cn(
+                    "h-5 w-5 transition-colors",
+                    isLiked && "fill-primary text-primary"
+                  )}
+                />
               </Button>
               <Button variant="ghost" size="icon" className="rounded-full" onClick={() => setDetailOpen(true)}>
                 <MessageCircle className="h-5 w-5" />
@@ -150,8 +204,21 @@ export function PostCard({ post }: PostCardProps) {
                 )}
               </Button>
             </div>
-            <Button variant="ghost" size="icon" className="rounded-full" onClick={() => saveMutation.mutate()}>
-              <Bookmark className="h-5 w-5" />
+            <Button
+              variant="ghost"
+              size="icon"
+              className="rounded-full"
+              onClick={() => saveMutation.mutate()}
+              disabled={!currentUser || saveMutation.isPending}
+              aria-label={isSaved ? "Remove bookmark" : "Bookmark post"}
+              aria-pressed={isSaved}
+            >
+              <Bookmark
+                className={cn(
+                  "h-5 w-5 transition-colors",
+                  isSaved && "fill-primary text-primary"
+                )}
+              />
             </Button>
           </div>
 

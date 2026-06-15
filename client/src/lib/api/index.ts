@@ -22,7 +22,9 @@ export const postsApi = {
     }),
 
   toggleLike: (id: string) =>
-    apiClient.put<{ message: string; likesCount: number }>(`/posts/like/${id}`),
+    apiClient.put<{ message: string; isLiked: boolean; likesCount: number }>(
+      `/posts/like/${id}`
+    ),
 
   delete: (id: string) => apiClient.delete<{ message: string }>(`/posts/${id}`),
 };
