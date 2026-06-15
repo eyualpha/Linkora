@@ -1,7 +1,22 @@
 import axios, { type AxiosError } from "axios";
 import { useAuthStore } from "@/stores/auth-store";
 
-const API_URL = import.meta.env.VITE_API_URL || "/api";
+function normalizeApiBaseUrl(value: string) {
+  const trimmed = value.replace(/\/$/, "");
+  if (trimmed === "/api" || trimmed.endsWith("/api")) return trimmed;
+  return `${trimmed}/api`;
+}
+
+function resolveApiBaseUrl() {
+  // Production: always same-origin /api → Vercel middleware proxies to backend (no CORS).
+  if (import.meta.env.PROD) return "/api";
+
+  const env = import.meta.env.VITE_API_URL?.trim();
+  if (!env) return "/api";
+  return normalizeApiBaseUrl(env);
+}
+
+const API_URL = resolveApiBaseUrl();
 
 export const apiClient = axios.create({
   baseURL: API_URL,
