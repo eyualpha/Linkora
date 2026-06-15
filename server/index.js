@@ -22,7 +22,7 @@ const app = express();
 
 app.use(
   cors({
-    origin: ["https://linkora-v2.vercel.app", "http://localhost:5173"],
+    origin: [process.env.CLIENT_URL, "http://localhost:5173"],
     credentials: true,
   })
 );
