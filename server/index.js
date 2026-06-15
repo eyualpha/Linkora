@@ -60,28 +60,31 @@ app.use((err, req, res, next) => {
 });
 
 const startServer = async () => {
-  try {
-    await connectDB();
+  app.listen(PORT, () => {
+    console.log(`Server is running on port ${PORT}`);
+  });
 
-    if (validateEmailConfig()) {
-      if (RESEND_API_KEY) {
-        console.log("Resend API key detected — OTP emails will use Resend.");
-      } else {
-        const emailCheck = await verifyEmailConnection();
-        if (emailCheck.ok) {
-          console.log("Email (SMTP) connection verified successfully.");
-        } else {
-          console.error("Email (SMTP) verification failed:", emailCheck.error);
-        }
-      }
+  connectDB().catch((err) => {
+    console.error("MongoDB connection failed on startup:", err.message);
+    console.error("API routes will return 503 until the database is available.");
+  });
+
+  if (validateEmailConfig()) {
+    if (RESEND_API_KEY) {
+      console.log("Resend API key detected — OTP emails will use Resend.");
+    } else {
+      verifyEmailConnection()
+        .then((emailCheck) => {
+          if (emailCheck.ok) {
+            console.log("Email (SMTP) connection verified successfully.");
+          } else {
+            console.error("Email (SMTP) verification failed:", emailCheck.error);
+          }
+        })
+        .catch((err) => {
+          console.error("Email (SMTP) verification failed:", err.message);
+        });
     }
-
-    app.listen(PORT, () => {
-      console.log(`Server is running on port ${PORT}`);
-    });
-  } catch (err) {
-    console.error("Failed to start server:", err);
-    process.exit(1);
   }
 };
 

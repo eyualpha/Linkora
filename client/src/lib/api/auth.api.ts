@@ -9,16 +9,13 @@ export const authApi = {
     password: string;
     gender: "male" | "female";
   }) =>
-    apiClient.post<{ message: string; userId: string; devOtp?: string }>(
-      "/auth/register",
-      data
-    ),
+    apiClient.post<{ message: string; userId: string }>("/auth/register", data),
 
   verifyOtp: (data: { userId: string; otp: string }) =>
     apiClient.post<{ message: string }>("/auth/verify-otp", data),
 
   resendOtp: (data: { userId: string }) =>
-    apiClient.post<{ message: string; devOtp?: string }>("/auth/resend-otp", data),
+    apiClient.post<{ message: string }>("/auth/resend-otp", data),
 
   login: (data: { email: string; password: string }) =>
     apiClient.post<AuthResponse>("/auth/login", data),

@@ -11,8 +11,7 @@ export function VerifyOtpPage() {
   const navigate = useNavigate();
   const [params] = useSearchParams();
   const userId = params.get("userId") || "";
-  const devOtpFromUrl = params.get("devOtp") || "";
-  const [otp, setOtp] = useState(devOtpFromUrl);
+  const [otp, setOtp] = useState("");
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
   const [resendLoading, setResendLoading] = useState(false);
@@ -39,9 +38,6 @@ export function VerifyOtpPage() {
       setMessage("");
       const res = await authApi.resendOtp({ userId });
       setMessage(res.data.message);
-      if ("devOtp" in res.data && res.data.devOtp) {
-        setOtp(String(res.data.devOtp));
-      }
     } catch (err) {
       setError(getErrorMessage(err));
     } finally {
@@ -56,15 +52,18 @@ export function VerifyOtpPage() {
           <div className="text-center">
             <h1 className="text-2xl font-bold">Verify your email</h1>
             <p className="mt-2 text-sm text-muted">Enter the 6-digit code sent to your email</p>
-            {devOtpFromUrl && (
-              <p className="mt-2 rounded-xl bg-amber-50 px-3 py-2 text-xs text-amber-800">
-                Dev mode: OTP pre-filled because email delivery may be blocked. Check server logs too.
-              </p>
-            )}
           </div>
           <div>
             <Label htmlFor="otp">OTP Code</Label>
-            <Input id="otp" value={otp} onChange={(e) => setOtp(e.target.value)} maxLength={6} className="mt-1 text-center text-lg tracking-widest" />
+            <Input
+              id="otp"
+              value={otp}
+              onChange={(e) => setOtp(e.target.value.replace(/\D/g, "").slice(0, 6))}
+              maxLength={6}
+              inputMode="numeric"
+              autoComplete="one-time-code"
+              className="mt-1 text-center text-lg tracking-widest"
+            />
           </div>
           {error && <p className="text-sm text-red-500">{error}</p>}
           {message && <p className="text-sm text-green-600">{message}</p>}

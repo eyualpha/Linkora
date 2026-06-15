@@ -6,7 +6,11 @@
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
     "dev": "nodemon index.js",
-    "start": "node index.js"
+    "start": "node index.js",
+    "test:mongo": "node scripts/test-mongo.js",
+    "seed": "node scripts/seed.js",
+    "seed:posts": "node scripts/seed.js --posts-only",
+    "seed:fresh": "node scripts/seed.js --fresh"
   },
   "keywords": [],
   "author": "",

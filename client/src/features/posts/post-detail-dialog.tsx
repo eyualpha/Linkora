@@ -54,7 +54,6 @@ export function PostDetailDialog({ postId, open, onOpenChange }: PostDetailDialo
       setTimeout(() => setShareStatus("idle"), 2000);
     } catch (err) {
       if (err instanceof Error && err.name === "AbortError") return;
-      console.error("Share failed:", err);
     }
   };
 

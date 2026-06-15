@@ -2,9 +2,38 @@ require("dotenv").config();
 
 const normalizeEmailPass = (pass) => (pass || "").replace(/\s/g, "");
 
+const DEFAULT_DB_NAME = "linkora";
+
+const normalizeMongoUri = (uri) => {
+  if (!uri) return uri;
+
+  const trimmed = uri.trim();
+  if (!trimmed.startsWith("mongodb")) return trimmed;
+
+  try {
+    const parsed = new URL(trimmed);
+    const pathname = parsed.pathname.replace(/^\//, "");
+
+    if (!pathname || pathname === "") {
+      parsed.pathname = `/${DEFAULT_DB_NAME}`;
+    }
+
+    if (!parsed.searchParams.has("retryWrites")) {
+      parsed.searchParams.set("retryWrites", "true");
+    }
+    if (!parsed.searchParams.has("w")) {
+      parsed.searchParams.set("w", "majority");
+    }
+
+    return parsed.toString();
+  } catch {
+    return trimmed;
+  }
+};
+
 const config = {
   PORT: process.env.PORT || 5000,
-  MONGO_URI: process.env.MONGO_URI,
+  MONGO_URI: normalizeMongoUri(process.env.MONGO_URI),
   EMAIL_USER: process.env.EMAIL_USER?.trim(),
   EMAIL_PASS: normalizeEmailPass(process.env.EMAIL_PASS),
   EMAIL_FROM: process.env.EMAIL_FROM?.trim() || process.env.EMAIL_USER?.trim(),
@@ -19,7 +48,9 @@ const config = {
   BCRYPT_SALT_ROUNDS: 10,
   STORY_TTL_MS: 24 * 60 * 60 * 1000,
   MAX_STORIES_PER_USER: 10,
-  DEV_LOG_OTP: process.env.DEV_LOG_OTP === "true",
+  DEV_LOG_OTP:
+    process.env.NODE_ENV !== "production" &&
+    process.env.DEV_LOG_OTP === "true",
 };
 
 const validateEnv = () => {
@@ -51,4 +82,4 @@ const validateEmailConfig = () => {
   return false;
 };
 
-module.exports = { ...config, validateEnv, validateEmailConfig };
+module.exports = { ...config, validateEnv, validateEmailConfig, normalizeMongoUri };

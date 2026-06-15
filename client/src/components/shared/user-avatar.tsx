@@ -58,21 +58,69 @@ interface StoryAvatarProps {
   hasUnviewed?: boolean;
   size?: "sm" | "md" | "lg";
   onClick?: () => void;
+  hideLabel?: boolean;
+  label?: string;
 }
 
 const sizes = { sm: "h-14 w-14", md: "h-16 w-16", lg: "h-20 w-20" };
 
-export function StoryAvatar({ user, hasUnviewed = true, size = "md", onClick }: StoryAvatarProps) {
+interface StoryProfileRingProps {
+  hasUnviewed?: boolean;
+  variant?: "feed" | "viewer";
+  className?: string;
+  children: React.ReactNode;
+}
+
+export function StoryProfileRing({
+  hasUnviewed = true,
+  variant = "feed",
+  className,
+  children,
+}: StoryProfileRingProps) {
   return (
-    <button type="button" onClick={onClick} className="flex flex-col items-center gap-2 text-center">
-      <div className={cn("rounded-full", hasUnviewed ? "story-ring" : "story-ring-viewed")}>
+    <div
+      className={cn(hasUnviewed ? "story-ring" : "story-ring-viewed", className)}
+    >
+      <div className={variant === "viewer" ? "story-ring-inner-dark" : "story-ring-inner"}>
+        {children}
+      </div>
+    </div>
+  );
+}
+
+export function StoryAvatar({
+  user,
+  hasUnviewed = true,
+  size = "md",
+  onClick,
+  hideLabel = false,
+  label,
+}: StoryAvatarProps) {
+  const displayLabel = label ?? user?.username ?? "user";
+  const className = "flex flex-col items-center gap-2 text-center";
+
+  const content = (
+    <>
+      <StoryProfileRing hasUnviewed={hasUnviewed}>
         <UserAvatar
           user={user}
           linkToProfile={false}
-          className={cn(sizes[size], "border-2 border-card bg-card")}
+          className={cn(sizes[size], "bg-card")}
         />
-      </div>
-      <span className="max-w-[72px] truncate text-xs text-muted">{user?.username || "user"}</span>
-    </button>
+      </StoryProfileRing>
+      {!hideLabel && (
+        <span className="max-w-[72px] truncate text-xs text-muted">{displayLabel}</span>
+      )}
+    </>
   );
+
+  if (onClick) {
+    return (
+      <button type="button" onClick={onClick} className={className}>
+        {content}
+      </button>
+    );
+  }
+
+  return <div className={className}>{content}</div>;
 }

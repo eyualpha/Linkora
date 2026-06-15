@@ -2,7 +2,7 @@ const User = require("../models/user.model");
 const { findUserById } = require("./user.controller");
 const { generateOTP } = require("../utils/generateOTP");
 const sendOTP = require("../utils/sendOTP");
-const { OTP_EXPIRY_MS, DEV_LOG_OTP } = require("../configs/env.config");
+const { OTP_EXPIRY_MS } = require("../configs/env.config");
 
 const isOtpExpired = (expiresAt) => {
   if (!expiresAt) return true;
@@ -95,7 +95,6 @@ const resendRegistrationOTP = async (req, res) => {
 
     return res.status(200).json({
       message: "A new verification code has been sent to your email.",
-      ...(DEV_LOG_OTP && { devOtp: otpCode }),
     });
   } catch (error) {
     console.error("Resend OTP Error:", error);

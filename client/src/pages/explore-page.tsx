@@ -64,13 +64,13 @@ export function ExplorePage() {
       <section>
         <h2 className="mb-4 text-xl font-bold">Trending</h2>
         {trending.isLoading ? (
-          <div className="grid gap-6 sm:grid-cols-2 xl:grid-cols-3">
+          <div className="grid items-start gap-6 sm:grid-cols-2 xl:grid-cols-3">
             {Array.from({ length: 6 }).map((_, i) => (
               <Skeleton key={i} className="h-96 rounded-3xl" />
             ))}
           </div>
         ) : (
-          <div className="grid gap-6 sm:grid-cols-2 xl:grid-cols-3">
+          <div className="grid items-start gap-6 sm:grid-cols-2 xl:grid-cols-3">
             {posts.map((post) => (
               <PostCard key={post._id} post={post} />
             ))}

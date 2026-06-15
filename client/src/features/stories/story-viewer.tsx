@@ -2,7 +2,7 @@ import { useEffect, useState } from "react";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { X, ChevronLeft, ChevronRight, Heart } from "lucide-react";
 import { storiesApi } from "@/lib/api";
-import { UserAvatar } from "@/components/shared/user-avatar";
+import { UserAvatar, StoryProfileRing } from "@/components/shared/user-avatar";
 import { useAuthStore } from "@/stores/auth-store";
 import { cn, formatCount } from "@/lib/utils";
 import type { StoryGroup, StoryItem } from "@/types";
@@ -98,10 +98,13 @@ export function StoryViewer({ group, onClose }: StoryViewerProps) {
 
         <div className="pointer-events-none absolute inset-x-0 top-0 z-10 bg-gradient-to-b from-black/70 via-black/30 to-transparent px-4 pb-10 pt-12">
           <div className="pointer-events-auto flex items-center gap-3">
-            <UserAvatar
-              user={group.user}
-              className="h-10 w-10 shrink-0 border-2 border-white"
-            />
+            <StoryProfileRing hasUnviewed variant="viewer">
+              <UserAvatar
+                user={group.user}
+                linkToProfile={false}
+                className="h-10 w-10 shrink-0 bg-black"
+              />
+            </StoryProfileRing>
             <div className="min-w-0 text-white">
               <p className="truncate text-sm font-semibold">{group.user.username}</p>
               <p className="text-xs opacity-80">

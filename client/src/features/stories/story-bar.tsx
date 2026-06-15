@@ -32,12 +32,12 @@ export function StoryBar() {
               onClick={() => setCreateOpen(true)}
             >
               <div className="relative">
-                <StoryAvatar user={user} hasUnviewed={false} />
+                <StoryAvatar user={user} hasUnviewed={false} hideLabel />
                 <span className="absolute bottom-6 right-0 flex h-6 w-6 items-center justify-center rounded-full bg-blue-500 text-white ring-2 ring-white">
                   <Plus className="h-3.5 w-3.5" />
                 </span>
               </div>
-              <span className="text-xs text-gray-600">Your story</span>
+              <span className="text-xs text-muted">Your story</span>
             </button>
 
             {isLoading

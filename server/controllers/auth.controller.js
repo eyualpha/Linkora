@@ -8,7 +8,6 @@ const {
   JWT_EXPIRES_IN,
   OTP_EXPIRY_MS,
   BCRYPT_SALT_ROUNDS,
-  DEV_LOG_OTP,
 } = require("../configs/env.config");
 
 const register = async (req, res) => {
@@ -57,7 +56,6 @@ const register = async (req, res) => {
     return res.status(201).json({
       message: "Registration successful! OTP sent to your email.",
       userId: newUser._id,
-      ...(DEV_LOG_OTP && { devOtp: otpCode }),
     });
   } catch (error) {
     if (error.code === 11000) {

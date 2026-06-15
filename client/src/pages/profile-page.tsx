@@ -91,7 +91,7 @@ export function ProfilePage() {
 
       <section>
         <h2 className="mb-4 text-xl font-bold">Posts</h2>
-        <div className="grid gap-6 sm:grid-cols-2 xl:grid-cols-3">
+        <div className="grid items-start gap-6 sm:grid-cols-2 xl:grid-cols-3">
           {userPosts.map((post) => (
             <PostCard key={post._id} post={post} />
           ))}

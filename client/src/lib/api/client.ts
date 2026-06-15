@@ -28,8 +28,12 @@ apiClient.interceptors.response.use(
 
 export function getErrorMessage(error: unknown, fallback = "Something went wrong") {
   if (axios.isAxiosError(error)) {
-    return error.response?.data?.message || error.message || fallback;
+    const message = error.response?.data?.message;
+    if (typeof message === "string" && message.trim()) return message;
+    return fallback;
   }
-  if (error instanceof Error) return error.message;
+  if (error instanceof Error && !import.meta.env.PROD) {
+    return error.message;
+  }
   return fallback;
 }

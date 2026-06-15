@@ -62,15 +62,15 @@ export function PostCard({ post }: PostCardProps) {
       setTimeout(() => setShareStatus("idle"), 2000);
     } catch (err) {
       if (err instanceof Error && err.name === "AbortError") return;
-      console.error("Share failed:", err);
     }
   };
 
   const showFollowAction = !isOwnPost && authorId && isFollowing !== undefined;
+  const hasMedia = (post.files ?? []).some((file) => file.url);
 
   return (
     <>
-      <Card className="overflow-hidden transition-transform hover:-translate-y-0.5">
+      <Card className="h-fit w-full self-start overflow-hidden transition-transform hover:-translate-y-0.5">
         <div className="flex items-center justify-between gap-2 p-4">
           <div className="flex min-w-0 flex-1 items-center gap-3">
             <UserAvatar user={author as User} className="h-10 w-10 shrink-0" />
@@ -108,13 +108,21 @@ export function PostCard({ post }: PostCardProps) {
             ))}
         </div>
 
-        <PostMediaGallery
-          files={post.files}
-          variant="card"
-          onImageClick={() => setDetailOpen(true)}
-        />
+        {!hasMedia && post.text && (
+          <div className="px-4 pb-3">
+            <p className="text-sm leading-relaxed">{post.text}</p>
+          </div>
+        )}
 
-        <div className="space-y-3 p-4">
+        {hasMedia && (
+          <PostMediaGallery
+            files={post.files}
+            variant="card"
+            onImageClick={() => setDetailOpen(true)}
+          />
+        )}
+
+        <div className={cn("space-y-3 p-4", !hasMedia && "pt-0")}>
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-1">
               <Button
@@ -158,7 +166,7 @@ export function PostCard({ post }: PostCardProps) {
             <p className="text-sm font-semibold">{formatCount(likesCount)} likes</p>
           )}
 
-          {post.text && (
+          {hasMedia && post.text && (
             <p className="text-sm leading-relaxed">
               <span className="mr-2 font-semibold">{author?.username}</span>
               {post.text}

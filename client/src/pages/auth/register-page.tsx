@@ -33,11 +33,7 @@ export function RegisterPage() {
     try {
       setError("");
       const res = await authApi.register(data);
-      const devQuery =
-        "devOtp" in res.data && res.data.devOtp
-          ? `&devOtp=${encodeURIComponent(String(res.data.devOtp))}`
-          : "";
-      navigate(`/verify-otp?userId=${res.data.userId}${devQuery}`);
+      navigate(`/verify-otp?userId=${res.data.userId}`);
     } catch (err) {
       setError(getErrorMessage(err, "Registration failed"));
     }
