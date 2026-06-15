@@ -15,6 +15,7 @@ const followRouter = require("./routes/follow.route.js");
 const storyRouter = require("./routes/story.route.js");
 const savedRouter = require("./routes/saved.route.js");
 const notificationRouter = require("./routes/notification.route.js");
+const chatRouter = require("./routes/chat.route.js");
 
 validateEnv();
 
@@ -54,6 +55,7 @@ app.use("/api/follows", followRouter);
 app.use("/api/stories", storyRouter);
 app.use("/api/saves", savedRouter);
 app.use("/api/notifications", notificationRouter);
+app.use("/api/conversations", chatRouter);
 
 app.get("/", (req, res) => {
   res.send("API is running...");

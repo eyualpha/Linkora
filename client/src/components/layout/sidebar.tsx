@@ -1,14 +1,17 @@
 import { Link, useLocation, useNavigate } from "react-router-dom";
-import { Bookmark, Compass, Home, LogOut, Settings } from "lucide-react";
+import { Bookmark, Compass, Home, LogOut, MessageCircle, Settings } from "lucide-react";
 import { UserAvatar } from "@/components/shared/user-avatar";
+import { NotificationDot } from "@/components/shared/notification-dot";
 import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
 import { useAuthStore } from "@/stores/auth-store";
+import { useUnreadMessageCount } from "@/hooks/use-unread-messages";
 import { cn, formatCount } from "@/lib/utils";
 
 const navItems = [
   { to: "/", label: "Feed", icon: Home },
   { to: "/explore", label: "Explore", icon: Compass },
+  { to: "/messages", label: "Messages", icon: MessageCircle, showUnread: true },
   { to: "/saved", label: "Saved", icon: Bookmark },
   { to: "/settings", label: "Settings", icon: Settings },
 ];
@@ -17,6 +20,7 @@ export function Sidebar() {
   const location = useLocation();
   const navigate = useNavigate();
   const { user, logout } = useAuthStore();
+  const { data: unreadMessages = 0 } = useUnreadMessageCount();
 
   return (
     <aside className="sticky top-6 flex h-[calc(100vh-3rem)] w-[280px] shrink-0 flex-col rounded-xl glass-card p-6">
@@ -51,19 +55,22 @@ export function Sidebar() {
       <Separator className="mb-4" />
 
       <nav className="flex flex-1 flex-col gap-1">
-        {navItems.map(({ to, label, icon: Icon }) => {
-          const active = location.pathname === to;
+        {navItems.map(({ to, label, icon: Icon, showUnread }) => {
+          const active = location.pathname === to || (to === "/messages" && location.pathname.startsWith("/messages"));
           return (
             <Link
               key={to}
               to={to}
               className={cn(
-                "flex items-center gap-3 rounded-lg px-4 py-3 text-sm font-medium transition-colors",
+                "relative flex items-center gap-3 rounded-lg px-4 py-3 text-sm font-medium transition-colors",
                 active ? "bg-accent text-foreground" : "text-muted hover:bg-accent hover:text-foreground"
               )}
             >
               <Icon className="h-5 w-5" />
               {label}
+              {showUnread && unreadMessages > 0 && (
+                <NotificationDot count={unreadMessages} />
+              )}
             </Link>
           );
         })}
@@ -89,7 +96,7 @@ export function MobileNav() {
   return (
     <nav className="fixed bottom-0 left-0 right-0 z-40 flex items-center justify-around border-t border-border bg-card/95 px-4 py-3 backdrop-blur lg:hidden">
       {navItems.map(({ to, label, icon: Icon }) => {
-        const active = location.pathname === to;
+        const active = location.pathname === to || (to === "/messages" && location.pathname.startsWith("/messages"));
         return (
           <Link
             key={to}

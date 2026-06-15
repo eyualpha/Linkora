@@ -73,10 +73,32 @@ export interface StoryGroup {
 export interface Notification {
   _id: string;
   sender: User;
-  type: "like" | "comment" | "follow" | "story_view" | "mention";
+  type: "like" | "comment" | "follow" | "story_view" | "mention" | "message";
   message: string;
   post?: Post;
   isRead: boolean;
+  createdAt: string;
+}
+
+export interface ChatMessage {
+  _id: string;
+  conversation: string;
+  sender: User;
+  content: string;
+  readBy: { user: string; readAt: string }[];
+  createdAt: string;
+}
+
+export interface ConversationPreview {
+  _id: string;
+  otherUser: User;
+  lastMessage?: {
+    content: string;
+    sender: string;
+    createdAt: string;
+  };
+  unreadCount: number;
+  updatedAt: string;
   createdAt: string;
 }
 

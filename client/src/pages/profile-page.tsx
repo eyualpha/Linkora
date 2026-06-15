@@ -1,16 +1,19 @@
-import { useParams } from "react-router-dom";
+import { useState } from "react";
+import { useParams, useNavigate } from "react-router-dom";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { useInfiniteQuery } from "@tanstack/react-query";
+import { MessageCircle } from "lucide-react";
 import { UserAvatar } from "@/components/shared/user-avatar";
 import { PostGrid } from "@/components/shared/post-grid";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
-import { followsApi, postsApi, usersApi } from "@/lib/api";
+import { followsApi, postsApi, usersApi, chatApi, getErrorMessage } from "@/lib/api";
 import { useAuthStore } from "@/stores/auth-store";
 import { formatCount } from "@/lib/utils";
 
 export function ProfilePage() {
   const { userId } = useParams<{ userId: string }>();
+  const navigate = useNavigate();
   const currentUser = useAuthStore((s) => s.user);
   const queryClient = useQueryClient();
   const isOwnProfile = currentUser?._id === userId;
@@ -45,6 +48,19 @@ export function ProfilePage() {
     },
   });
 
+  const [messageError, setMessageError] = useState("");
+
+  const messageMutation = useMutation({
+    mutationFn: () => chatApi.getOrCreate(userId!),
+    onMutate: () => setMessageError(""),
+    onSuccess: (response) => {
+      navigate(`/messages/${response.data.conversation._id}`);
+    },
+    onError: (error) => {
+      setMessageError(getErrorMessage(error, "Could not open chat. Try again."));
+    },
+  });
+
   if (isLoading) return <Skeleton className="h-64 w-full rounded-3xl" />;
   if (!profile) return <p>User not found</p>;
 
@@ -76,14 +92,27 @@ export function ProfilePage() {
             </div>
 
             {!isOwnProfile && (
-              <Button
-                variant={followStatus ? "outline" : "default"}
-                className="mt-6"
-                onClick={() => followMutation.mutate()}
-                disabled={followMutation.isPending}
-              >
-                {followStatus ? "Unfollow" : "Follow"}
-              </Button>
+              <div className="mt-6 flex flex-wrap justify-center gap-3 sm:justify-start">
+                <Button
+                  variant={followStatus ? "outline" : "default"}
+                  onClick={() => followMutation.mutate()}
+                  disabled={followMutation.isPending}
+                >
+                  {followStatus ? "Unfollow" : "Follow"}
+                </Button>
+                <Button
+                  variant="outline"
+                  className="gap-2"
+                  onClick={() => messageMutation.mutate()}
+                  disabled={messageMutation.isPending}
+                >
+                  <MessageCircle className="h-4 w-4" />
+                  {messageMutation.isPending ? "Opening..." : "Message"}
+                </Button>
+              </div>
+            )}
+            {messageError && (
+              <p className="mt-3 text-center text-sm text-red-500 sm:text-left">{messageError}</p>
             )}
           </div>
         </div>

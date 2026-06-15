@@ -11,6 +11,7 @@ import { ExplorePage } from "@/pages/explore-page";
 import { ProfilePage } from "@/pages/profile-page";
 import { SavedPage } from "@/pages/saved-page";
 import { NotificationsPage } from "@/pages/notifications-page";
+import { MessagesPage } from "@/pages/messages-page";
 import { SettingsPage } from "@/pages/settings-page";
 import { PostDeepLinkHandler } from "@/components/shared/post-deep-link";
 
@@ -42,6 +43,8 @@ export default function App() {
               <Route path="explore" element={<ExplorePage />} />
               <Route path="saved" element={<SavedPage />} />
               <Route path="notifications" element={<NotificationsPage />} />
+              <Route path="messages" element={<MessagesPage />} />
+              <Route path="messages/:conversationId" element={<MessagesPage />} />
               <Route path="settings" element={<SettingsPage />} />
               <Route path="profile/:userId" element={<ProfilePage />} />
             </Route>

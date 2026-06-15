@@ -103,3 +103,34 @@ export const notificationsApi = {
   markAllRead: () => apiClient.put<{ message: string }>("/notifications/read-all"),
   delete: (id: string) => apiClient.delete<{ message: string }>(`/notifications/${id}`),
 };
+
+export const chatApi = {
+  getConversations: (page = 1) =>
+    apiClient.get<{
+      conversations: import("@/types").ConversationPreview[];
+      pagination: PaginatedPosts["pagination"];
+    }>(`/conversations?page=${page}`),
+
+  getOrCreate: (recipientId: string) =>
+    apiClient.post<{ conversation: import("@/types").ConversationPreview }>("/conversations", {
+      recipientId,
+    }),
+
+  getMessages: (conversationId: string, page = 1) =>
+    apiClient.get<{
+      messages: import("@/types").ChatMessage[];
+      pagination: PaginatedPosts["pagination"];
+      conversation: import("@/types").ConversationPreview;
+    }>(`/conversations/${conversationId}/messages?page=${page}`),
+
+  sendMessage: (conversationId: string, content: string) =>
+    apiClient.post<{ message: import("@/types").ChatMessage }>(
+      `/conversations/${conversationId}/messages`,
+      { content }
+    ),
+
+  markRead: (conversationId: string) =>
+    apiClient.put<{ message: string }>(`/conversations/${conversationId}/read`),
+
+  unreadCount: () => apiClient.get<{ unreadCount: number }>("/conversations/unread-count"),
+};

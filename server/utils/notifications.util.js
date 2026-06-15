@@ -8,6 +8,7 @@ const createNotification = async ({
   postId = null,
   storyId = null,
   commentId = null,
+  conversationId = null,
 }) => {
   if (!recipientId || !senderId || recipientId.toString() === senderId.toString()) {
     return null;
@@ -22,6 +23,7 @@ const createNotification = async ({
       post: postId,
       story: storyId,
       comment: commentId,
+      conversation: conversationId,
     });
   } catch (err) {
     console.error("Create notification error:", err.message);

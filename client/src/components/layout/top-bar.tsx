@@ -10,6 +10,7 @@ import { NotificationDot } from "@/components/shared/notification-dot";
 import { CreatePostDialog } from "@/features/posts/create-post-dialog";
 import { ThemeToggle } from "@/components/theme-toggle";
 import { useUnreadNotificationCount } from "@/hooks/use-unread-notifications";
+import { useUnreadMessageCount } from "@/hooks/use-unread-messages";
 import { useAuthStore } from "@/stores/auth-store";
 import type { User } from "@/types";
 
@@ -21,6 +22,7 @@ export function TopBar() {
   const [createOpen, setCreateOpen] = useState(false);
 
   const { data: unreadCount = 0 } = useUnreadNotificationCount();
+  const { data: unreadMessages = 0 } = useUnreadMessageCount();
 
   const { data: searchResults } = useQuery({
     queryKey: ["users", "search", query],
@@ -89,8 +91,19 @@ export function TopBar() {
           <NotificationDot count={unreadCount} />
         </Button>
 
-        <Button variant="ghost" size="icon" className="hidden shrink-0 rounded-full sm:inline-flex">
+        <Button
+          variant="ghost"
+          size="icon"
+          className="relative shrink-0 rounded-full"
+          onClick={() => navigate("/messages")}
+          aria-label={
+            unreadMessages > 0
+              ? `Messages, ${unreadMessages} unread`
+              : "Messages"
+          }
+        >
           <MessageCircle className="h-5 w-5" />
+          <NotificationDot count={unreadMessages} />
         </Button>
 
         <Button className="hidden shrink-0 gap-2 sm:flex" onClick={() => setCreateOpen(true)}>
