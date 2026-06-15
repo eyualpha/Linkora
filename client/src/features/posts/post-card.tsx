@@ -70,7 +70,7 @@ export function PostCard({ post }: PostCardProps) {
 
   return (
     <>
-      <Card className="h-fit w-full self-start overflow-hidden transition-transform hover:-translate-y-0.5">
+      <Card className="w-full overflow-hidden transition-transform hover:-translate-y-0.5">
         <div className="flex items-center justify-between gap-2 p-4">
           <div className="flex min-w-0 flex-1 items-center gap-3">
             <UserAvatar user={author as User} className="h-10 w-10 shrink-0" />

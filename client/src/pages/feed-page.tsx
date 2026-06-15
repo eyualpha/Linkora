@@ -1,7 +1,6 @@
 import { useInfiniteQuery } from "@tanstack/react-query";
 import { StoryBar } from "@/features/stories/story-bar";
-import { PostCard } from "@/features/posts/post-card";
-import { Skeleton } from "@/components/ui/skeleton";
+import { PostMasonryGrid, PostMasonrySkeleton } from "@/components/shared/post-masonry-grid";
 import { Button } from "@/components/ui/button";
 import { postsApi } from "@/lib/api";
 
@@ -23,20 +22,12 @@ export function FeedPage() {
       <section>
         <h2 className="mb-4 text-xl font-bold">Feed</h2>
         {isLoading ? (
-          <div className="grid items-start gap-6 sm:grid-cols-2 xl:grid-cols-3">
-            {Array.from({ length: 6 }).map((_, i) => (
-              <Skeleton key={i} className="h-96 rounded-3xl" />
-            ))}
-          </div>
+          <PostMasonrySkeleton />
         ) : (
           <>
-            <div className="grid items-start gap-6 sm:grid-cols-2 xl:grid-cols-3">
-              {posts.map((post) => (
-                <PostCard key={post._id} post={post} />
-              ))}
-            </div>
+            <PostMasonryGrid posts={posts} />
             {hasNextPage && (
-              <div className="mt-8 flex justify-center">
+              <div className="mt-2 flex justify-center">
                 <Button variant="outline" onClick={() => fetchNextPage()} disabled={isFetchingNextPage}>
                   {isFetchingNextPage ? "Loading..." : "Load more"}
                 </Button>

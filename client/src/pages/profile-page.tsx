@@ -2,7 +2,7 @@ import { useParams } from "react-router-dom";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { useInfiniteQuery } from "@tanstack/react-query";
 import { UserAvatar } from "@/components/shared/user-avatar";
-import { PostCard } from "@/features/posts/post-card";
+import { PostMasonryGrid } from "@/components/shared/post-masonry-grid";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
 import { followsApi, postsApi, usersApi } from "@/lib/api";
@@ -91,11 +91,7 @@ export function ProfilePage() {
 
       <section>
         <h2 className="mb-4 text-xl font-bold">Posts</h2>
-        <div className="grid items-start gap-6 sm:grid-cols-2 xl:grid-cols-3">
-          {userPosts.map((post) => (
-            <PostCard key={post._id} post={post} />
-          ))}
-        </div>
+        <PostMasonryGrid posts={userPosts} />
       </section>
     </div>
   );

@@ -1,6 +1,6 @@
 import { useInfiniteQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { UserPlus } from "lucide-react";
-import { PostCard } from "@/features/posts/post-card";
+import { PostMasonryGrid, PostMasonrySkeleton } from "@/components/shared/post-masonry-grid";
 import { UserAvatar } from "@/components/shared/user-avatar";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
@@ -64,17 +64,9 @@ export function ExplorePage() {
       <section>
         <h2 className="mb-4 text-xl font-bold">Trending</h2>
         {trending.isLoading ? (
-          <div className="grid items-start gap-6 sm:grid-cols-2 xl:grid-cols-3">
-            {Array.from({ length: 6 }).map((_, i) => (
-              <Skeleton key={i} className="h-96 rounded-3xl" />
-            ))}
-          </div>
+          <PostMasonrySkeleton />
         ) : (
-          <div className="grid items-start gap-6 sm:grid-cols-2 xl:grid-cols-3">
-            {posts.map((post) => (
-              <PostCard key={post._id} post={post} />
-            ))}
-          </div>
+          <PostMasonryGrid posts={posts} />
         )}
       </section>
     </div>
