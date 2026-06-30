@@ -12,9 +12,9 @@ const {
 
 const register = async (req, res) => {
   try {
-    const { fullname, username, email, password, gender } = req.body;
+    const { fullname, username, email, password } = req.body;
 
-    if (!fullname || !username || !email || !password || !gender) {
+    if (!fullname || !username || !email || !password) {
       return res.status(400).json({ message: "All fields are required." });
     }
 
@@ -35,7 +35,6 @@ const register = async (req, res) => {
       fullname,
       username,
       email,
-      gender,
       password: hashedPassword,
       otp: {
         code: otpCode,

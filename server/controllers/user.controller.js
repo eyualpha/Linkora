@@ -7,6 +7,7 @@ const toSafeUser = (user) => ({
   fullname: user.fullname,
   username: user.username,
   email: user.email,
+  gender: user.gender,
   bio: user.bio,
   profilePicture: user.profilePicture,
   coverPicture: user.coverPicture,
@@ -20,7 +21,7 @@ const updateProfile = async (req, res) => {
     const userId = req.user?.id;
     if (!userId) return res.status(401).json({ message: "Unauthorized" });
 
-    const { fullname, bio, username } = req.body;
+    const { fullname, bio, username, gender } = req.body;
 
     const user = await User.findById(userId);
     if (!user) return res.status(404).json({ message: "User not found" });
@@ -49,6 +50,13 @@ const updateProfile = async (req, res) => {
       const exists = await User.findOne({ username });
       if (exists) return res.status(400).json({ message: "Username taken" });
       user.username = username;
+    }
+
+    if (gender !== undefined && gender !== "") {
+      if (!["male", "female"].includes(gender)) {
+        return res.status(400).json({ message: "Invalid gender value." });
+      }
+      user.gender = gender;
     }
 
     await user.save();

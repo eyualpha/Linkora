@@ -7,7 +7,6 @@ export const authApi = {
     username: string;
     email: string;
     password: string;
-    gender: "male" | "female";
   }) =>
     apiClient.post<{ message: string; userId: string }>("/auth/register", data),
 

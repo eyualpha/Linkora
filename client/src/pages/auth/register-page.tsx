@@ -15,7 +15,6 @@ const schema = z.object({
   username: z.string().min(3),
   email: z.string().email(),
   password: z.string().min(6),
-  gender: z.enum(["male", "female"]),
 });
 
 type FormData = z.infer<typeof schema>;
@@ -26,7 +25,6 @@ export function RegisterPage() {
 
   const { register, handleSubmit, formState: { isSubmitting } } = useForm<FormData>({
     resolver: zodResolver(schema),
-    defaultValues: { gender: "male" },
   });
 
   const onSubmit = async (data: FormData) => {
@@ -64,13 +62,6 @@ export function RegisterPage() {
             <div>
               <Label htmlFor="password">Password</Label>
               <Input id="password" type="password" {...register("password")} className="mt-1" />
-            </div>
-            <div>
-              <Label htmlFor="gender">Gender</Label>
-              <select id="gender" {...register("gender")} className="mt-1 flex h-11 w-full rounded-full border border-border bg-white px-4 text-sm">
-                <option value="male">Male</option>
-                <option value="female">Female</option>
-              </select>
             </div>
             {error && <p className="text-sm text-red-500">{error}</p>}
             <Button type="submit" className="w-full" disabled={isSubmitting}>

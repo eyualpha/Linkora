@@ -18,6 +18,7 @@ const schema = z.object({
   fullname: z.string().min(2),
   username: z.string().min(3),
   bio: z.string().max(160).optional(),
+  gender: z.enum(["", "male", "female"]),
 });
 
 type FormData = z.infer<typeof schema>;
@@ -35,6 +36,7 @@ export function SettingsPage() {
       fullname: user?.fullname || "",
       username: user?.username || "",
       bio: user?.bio || "",
+      gender: (user?.gender as FormData["gender"]) || "",
     },
   });
 
@@ -44,6 +46,7 @@ export function SettingsPage() {
       formData.append("fullname", data.fullname);
       formData.append("username", data.username);
       if (data.bio) formData.append("bio", data.bio);
+      if (data.gender) formData.append("gender", data.gender);
       if (profileFile) formData.append("profilePicture", profileFile);
       if (coverFile) formData.append("coverPicture", coverFile);
       return usersApi.updateProfile(formData);
@@ -91,6 +94,18 @@ export function SettingsPage() {
             <div>
               <Label htmlFor="username">Username</Label>
               <Input id="username" {...register("username")} className="mt-1 rounded-xl" />
+            </div>
+            <div>
+              <Label htmlFor="gender">Gender</Label>
+              <select
+                id="gender"
+                {...register("gender")}
+                className="mt-1 flex h-11 w-full rounded-xl border border-border bg-card px-4 text-sm"
+              >
+                <option value="">Select gender</option>
+                <option value="male">Male</option>
+                <option value="female">Female</option>
+              </select>
             </div>
             <div>
               <Label htmlFor="bio">Bio</Label>
