@@ -15,7 +15,7 @@ const uploadFields = upload.fields([
 ]);
 
 userRouter.put("/update-profile", isAuthenticated, uploadFields, updateProfile);
-userRouter.get("/search", isAuthenticated, searchUsers);
+userRouter.get("/search", searchUsers);
 userRouter.get("/:userID", getUserByIdHandler);
 
 module.exports = userRouter;

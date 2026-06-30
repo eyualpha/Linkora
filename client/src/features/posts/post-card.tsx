@@ -11,6 +11,7 @@ import { PostDetailDialog } from "./post-detail-dialog";
 import { followsApi, postsApi, savesApi } from "@/lib/api";
 import { sharePost } from "@/lib/share";
 import { useAuthStore } from "@/stores/auth-store";
+import { useRequireAuth } from "@/hooks/use-require-auth";
 import { cn, formatCount } from "@/lib/utils";
 import type { Post, User } from "@/types";
 
@@ -26,6 +27,7 @@ function isPostLikedByUser(post: Post, userId?: string) {
 export function PostCard({ post }: PostCardProps) {
   const queryClient = useQueryClient();
   const currentUser = useAuthStore((s) => s.user);
+  const { isAuthenticated, requireAuth } = useRequireAuth();
   const [detailOpen, setDetailOpen] = useState(false);
   const [shareStatus, setShareStatus] = useState<"idle" | "shared" | "copied">("idle");
   const author = typeof post.author === "object" ? post.author : null;
@@ -43,7 +45,7 @@ export function PostCard({ post }: PostCardProps) {
   const { data: isFollowing } = useQuery({
     queryKey: ["follows", "status", authorId],
     queryFn: async () => (await followsApi.status(authorId!)).data.isFollowing,
-    enabled: Boolean(authorId && !isOwnPost),
+    enabled: Boolean(authorId && !isOwnPost && isAuthenticated),
   });
 
   const { data: isSaved = false } = useQuery({
@@ -111,7 +113,6 @@ export function PostCard({ post }: PostCardProps) {
     }
   };
 
-  const showFollowAction = !isOwnPost && authorId && isFollowing !== undefined;
   const hasMedia = (post.files ?? []).some((file) => file.url);
 
   return (
@@ -131,8 +132,8 @@ export function PostCard({ post }: PostCardProps) {
             </Link>
           </div>
 
-          {showFollowAction &&
-            (isFollowing ? (
+          {!isOwnPost && authorId &&
+            (isAuthenticated && isFollowing ? (
               <Button
                 size="sm"
                 variant="outline"
@@ -145,7 +146,10 @@ export function PostCard({ post }: PostCardProps) {
               <Button
                 size="sm"
                 className="shrink-0 gap-1.5 px-3"
-                onClick={() => followMutation.mutate()}
+                onClick={() => {
+                  if (!requireAuth()) return;
+                  followMutation.mutate();
+                }}
                 disabled={followMutation.isPending}
               >
                 <UserPlus className="h-4 w-4" />
@@ -175,8 +179,11 @@ export function PostCard({ post }: PostCardProps) {
                 variant="ghost"
                 size="icon"
                 className="rounded-full"
-                onClick={() => likeMutation.mutate()}
-                disabled={!currentUser || likeMutation.isPending}
+                onClick={() => {
+                  if (!requireAuth()) return;
+                  likeMutation.mutate();
+                }}
+                disabled={likeMutation.isPending}
                 aria-label={isLiked ? "Unlike post" : "Like post"}
                 aria-pressed={isLiked}
               >
@@ -208,8 +215,11 @@ export function PostCard({ post }: PostCardProps) {
               variant="ghost"
               size="icon"
               className="rounded-full"
-              onClick={() => saveMutation.mutate()}
-              disabled={!currentUser || saveMutation.isPending}
+              onClick={() => {
+                if (!requireAuth()) return;
+                saveMutation.mutate();
+              }}
+              disabled={saveMutation.isPending}
               aria-label={isSaved ? "Remove bookmark" : "Bookmark post"}
               aria-pressed={isSaved}
             >

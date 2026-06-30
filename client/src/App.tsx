@@ -37,16 +37,17 @@ export default function App() {
             <Route path="/forgot-password" element={<ForgotPasswordPage />} />
           </Route>
 
-          <Route element={<ProtectedRoute />}>
-            <Route element={<AppLayout />}>
-              <Route index element={<FeedPage />} />
-              <Route path="explore" element={<ExplorePage />} />
+          <Route element={<AppLayout />}>
+            <Route index element={<FeedPage />} />
+            <Route path="explore" element={<ExplorePage />} />
+            <Route path="profile/:userId" element={<ProfilePage />} />
+
+            <Route element={<ProtectedRoute />}>
               <Route path="saved" element={<SavedPage />} />
               <Route path="notifications" element={<NotificationsPage />} />
               <Route path="messages" element={<MessagesPage />} />
               <Route path="messages/:conversationId" element={<MessagesPage />} />
               <Route path="settings" element={<SettingsPage />} />
-              <Route path="profile/:userId" element={<ProfilePage />} />
             </Route>
           </Route>
 

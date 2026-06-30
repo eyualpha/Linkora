@@ -6,19 +6,26 @@ import { StoryAvatar } from "@/components/shared/user-avatar";
 import { Skeleton } from "@/components/ui/skeleton";
 import { storiesApi } from "@/lib/api";
 import { useAuthStore } from "@/stores/auth-store";
+import { useRequireAuth } from "@/hooks/use-require-auth";
 import { StoryViewer } from "./story-viewer";
 import { CreateStoryDialog } from "./create-story-dialog";
 import type { StoryGroup } from "@/types";
 
 export function StoryBar() {
   const user = useAuthStore((s) => s.user);
+  const { isAuthenticated, requireAuth } = useRequireAuth();
   const [viewerGroup, setViewerGroup] = useState<StoryGroup | null>(null);
   const [createOpen, setCreateOpen] = useState(false);
 
   const { data: feed, isLoading } = useQuery({
     queryKey: ["stories", "feed"],
     queryFn: async () => (await storiesApi.getFeed()).data.feed,
+    enabled: isAuthenticated,
   });
+
+  if (!isAuthenticated) {
+    return null;
+  }
 
   return (
     <>
@@ -29,7 +36,9 @@ export function StoryBar() {
             <button
               type="button"
               className="flex flex-col items-center gap-2"
-              onClick={() => setCreateOpen(true)}
+              onClick={() => {
+                if (requireAuth()) setCreateOpen(true);
+              }}
             >
               <div className="relative">
                 <StoryAvatar user={user} hasUnviewed={false} hideLabel />

@@ -10,7 +10,9 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { commentsApi, postsApi } from "@/lib/api";
 import { getErrorMessage } from "@/lib/api/client";
 import { sharePost } from "@/lib/share";
-import type { Post, User } from "@/types";
+import { useRequireAuth } from "@/hooks/use-require-auth";
+import { useAuthStore } from "@/stores/auth-store";
+import type { Post } from "@/types";
 
 interface PostDetailDialogProps {
   postId: string;
@@ -20,6 +22,8 @@ interface PostDetailDialogProps {
 
 export function PostDetailDialog({ postId, open, onOpenChange }: PostDetailDialogProps) {
   const queryClient = useQueryClient();
+  const { isAuthenticated, requireAuth } = useRequireAuth();
+  const currentUser = useAuthStore((s) => s.user);
   const [comment, setComment] = useState("");
   const [error, setError] = useState("");
   const [shareStatus, setShareStatus] = useState<"idle" | "shared" | "copied">("idle");
@@ -57,7 +61,11 @@ export function PostDetailDialog({ postId, open, onOpenChange }: PostDetailDialo
     }
   };
 
-  const author = post && typeof post.author === "object" ? post.author : null;
+  const handleComment = () => {
+    if (!comment.trim()) return;
+    if (!requireAuth()) return;
+    commentMutation.mutate();
+  };
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
@@ -94,18 +102,24 @@ export function PostDetailDialog({ postId, open, onOpenChange }: PostDetailDialo
               {!comments?.length && <p className="text-sm text-muted">No comments yet</p>}
             </div>
 
-            <div className="flex gap-2">
-              <UserAvatar user={author as User} linkToProfile={false} className="h-8 w-8" />
-              <Input
-                placeholder="Add a comment..."
-                value={comment}
-                onChange={(e) => setComment(e.target.value)}
-                onKeyDown={(e) => e.key === "Enter" && comment.trim() && commentMutation.mutate()}
-              />
-              <Button size="icon" onClick={() => commentMutation.mutate()} disabled={!comment.trim()}>
-                <Send className="h-4 w-4" />
+            {isAuthenticated ? (
+              <div className="flex gap-2">
+                <UserAvatar user={currentUser} linkToProfile={false} className="h-8 w-8" />
+                <Input
+                  placeholder="Add a comment..."
+                  value={comment}
+                  onChange={(e) => setComment(e.target.value)}
+                  onKeyDown={(e) => e.key === "Enter" && handleComment()}
+                />
+                <Button size="icon" onClick={handleComment} disabled={!comment.trim() || commentMutation.isPending}>
+                  <Send className="h-4 w-4" />
+                </Button>
+              </div>
+            ) : (
+              <Button variant="outline" className="w-full" onClick={() => requireAuth()}>
+                Sign in to comment
               </Button>
-            </div>
+            )}
             {error && <p className="text-sm text-red-500">{error}</p>}
           </div>
         ) : null}

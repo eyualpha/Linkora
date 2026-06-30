@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Link, useNavigate } from "react-router-dom";
+import { Link, useNavigate, useSearchParams } from "react-router-dom";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
@@ -20,8 +20,10 @@ type FormData = z.infer<typeof schema>;
 
 export function LoginPage() {
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
   const setAuth = useAuthStore((s) => s.setAuth);
   const [error, setError] = useState("");
+  const redirectTo = searchParams.get("redirect") || "/";
 
   const { register, handleSubmit, formState: { isSubmitting } } = useForm<FormData>({
     resolver: zodResolver(schema),
@@ -32,7 +34,7 @@ export function LoginPage() {
       setError("");
       const res = await authApi.login(data);
       setAuth(res.data.token, res.data.user);
-      navigate("/");
+      navigate(redirectTo.startsWith("/") ? redirectTo : "/", { replace: true });
     } catch (err) {
       setError(getErrorMessage(err, "Login failed"));
     }

@@ -9,12 +9,14 @@ import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
 import { followsApi, postsApi, usersApi, chatApi, getErrorMessage } from "@/lib/api";
 import { useAuthStore } from "@/stores/auth-store";
+import { useRequireAuth } from "@/hooks/use-require-auth";
 import { formatCount } from "@/lib/utils";
 
 export function ProfilePage() {
   const { userId } = useParams<{ userId: string }>();
   const navigate = useNavigate();
   const currentUser = useAuthStore((s) => s.user);
+  const { isAuthenticated, requireAuth } = useRequireAuth();
   const queryClient = useQueryClient();
   const isOwnProfile = currentUser?._id === userId;
 
@@ -27,7 +29,7 @@ export function ProfilePage() {
   const { data: followStatus } = useQuery({
     queryKey: ["follows", "status", userId],
     queryFn: async () => (await followsApi.status(userId!)).data.isFollowing,
-    enabled: Boolean(userId) && !isOwnProfile,
+    enabled: Boolean(userId) && !isOwnProfile && isAuthenticated,
   });
 
   const posts = useInfiniteQuery({
@@ -95,15 +97,21 @@ export function ProfilePage() {
               <div className="mt-6 flex flex-wrap justify-center gap-3 sm:justify-start">
                 <Button
                   variant={followStatus ? "outline" : "default"}
-                  onClick={() => followMutation.mutate()}
+                  onClick={() => {
+                    if (!requireAuth()) return;
+                    followMutation.mutate();
+                  }}
                   disabled={followMutation.isPending}
                 >
-                  {followStatus ? "Unfollow" : "Follow"}
+                  {isAuthenticated && followStatus ? "Unfollow" : "Follow"}
                 </Button>
                 <Button
                   variant="outline"
                   className="gap-2"
-                  onClick={() => messageMutation.mutate()}
+                  onClick={() => {
+                    if (!requireAuth()) return;
+                    messageMutation.mutate();
+                  }}
                   disabled={messageMutation.isPending}
                 >
                   <MessageCircle className="h-4 w-4" />

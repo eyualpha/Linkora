@@ -1,6 +1,6 @@
 import { useState } from "react";
-import { useNavigate } from "react-router-dom";
-import { Bell, MessageCircle, Plus, Search } from "lucide-react";
+import { Link, useNavigate } from "react-router-dom";
+import { Bell, LogIn, MessageCircle, Plus, Search } from "lucide-react";
 import { useQuery } from "@tanstack/react-query";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
@@ -11,11 +11,14 @@ import { CreatePostDialog } from "@/features/posts/create-post-dialog";
 import { ThemeToggle } from "@/components/theme-toggle";
 import { useUnreadNotificationCount } from "@/hooks/use-unread-notifications";
 import { useUnreadMessageCount } from "@/hooks/use-unread-messages";
+import { useRequireAuth } from "@/hooks/use-require-auth";
 import { useAuthStore } from "@/stores/auth-store";
+import { getLoginPath } from "@/lib/auth-redirect";
 import type { User } from "@/types";
 
 export function TopBar() {
   const navigate = useNavigate();
+  const { isAuthenticated, requireAuth } = useRequireAuth();
   const currentUser = useAuthStore((s) => s.user);
   const [query, setQuery] = useState("");
   const [showResults, setShowResults] = useState(false);
@@ -72,50 +75,74 @@ export function TopBar() {
 
         <ThemeToggle />
 
-        {currentUser && (
+        {isAuthenticated && currentUser && (
           <UserAvatar user={currentUser} className="hidden h-9 w-9 sm:block" />
         )}
 
-        <Button
-          variant="ghost"
-          size="icon"
-          className="relative shrink-0 rounded-full"
-          onClick={() => navigate("/notifications")}
-          aria-label={
-            unreadCount > 0
-              ? `Notifications, ${unreadCount} unread`
-              : "Notifications"
-          }
-        >
-          <Bell className="h-5 w-5" />
-          <NotificationDot count={unreadCount} />
-        </Button>
+        {isAuthenticated ? (
+          <>
+            <Button
+              variant="ghost"
+              size="icon"
+              className="relative shrink-0 rounded-full"
+              onClick={() => navigate("/notifications")}
+              aria-label={
+                unreadCount > 0
+                  ? `Notifications, ${unreadCount} unread`
+                  : "Notifications"
+              }
+            >
+              <Bell className="h-5 w-5" />
+              <NotificationDot count={unreadCount} />
+            </Button>
 
-        <Button
-          variant="ghost"
-          size="icon"
-          className="relative shrink-0 rounded-full"
-          onClick={() => navigate("/messages")}
-          aria-label={
-            unreadMessages > 0
-              ? `Messages, ${unreadMessages} unread`
-              : "Messages"
-          }
-        >
-          <MessageCircle className="h-5 w-5" />
-          <NotificationDot count={unreadMessages} />
-        </Button>
+            <Button
+              variant="ghost"
+              size="icon"
+              className="relative shrink-0 rounded-full"
+              onClick={() => navigate("/messages")}
+              aria-label={
+                unreadMessages > 0
+                  ? `Messages, ${unreadMessages} unread`
+                  : "Messages"
+              }
+            >
+              <MessageCircle className="h-5 w-5" />
+              <NotificationDot count={unreadMessages} />
+            </Button>
 
-        <Button className="hidden shrink-0 gap-2 sm:flex" onClick={() => setCreateOpen(true)}>
-          <Plus className="h-4 w-4" />
-          Create a post
-        </Button>
-        <Button size="icon" className="shrink-0 sm:hidden" onClick={() => setCreateOpen(true)}>
-          <Plus className="h-4 w-4" />
-        </Button>
+            <Button
+              className="hidden shrink-0 gap-2 sm:flex"
+              onClick={() => {
+                if (requireAuth()) setCreateOpen(true);
+              }}
+            >
+              <Plus className="h-4 w-4" />
+              Create a post
+            </Button>
+            <Button
+              size="icon"
+              className="shrink-0 sm:hidden"
+              onClick={() => {
+                if (requireAuth()) setCreateOpen(true);
+              }}
+            >
+              <Plus className="h-4 w-4" />
+            </Button>
+          </>
+        ) : (
+          <Button asChild variant="outline" className="shrink-0 gap-2">
+            <Link to={getLoginPath()}>
+              <LogIn className="h-4 w-4" />
+              <span className="hidden sm:inline">Sign in</span>
+            </Link>
+          </Button>
+        )}
       </header>
 
-      <CreatePostDialog open={createOpen} onOpenChange={setCreateOpen} />
+      {isAuthenticated && (
+        <CreatePostDialog open={createOpen} onOpenChange={setCreateOpen} />
+      )}
     </>
   );
 }
